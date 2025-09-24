@@ -75,15 +75,15 @@ Run the CLI from the root of your project:
 
 ```bash
 # Configure project base folders
-dart run bin/archify.dart configure
+dart run archify configure
 
 # Generate a new feature/module
-dart run bin/archify.dart generate auth
+dart run archify generate auth
 ```
 
 ## 🛠️ Example
 ```bash
-dart run bin/archify.dart generate profile
+dart run archify generate profile
 ```
 
 This generates:
