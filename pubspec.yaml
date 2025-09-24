@@ -1,0 +1,23 @@
+name: archify
+description: A CLI tool to configure and generate project architecture
+version: 1.0.0
+# repository: https://github.com/my_org/my_repo
+
+environment:
+  sdk: ^3.9.2
+
+# Add regular dependencies here.
+dependencies:
+  
+  path: ^1.9.1
+  args: ^2.7.0
+  yaml: ^3.1.3
+  yaml_edit: ^2.2.2
+  mustache_template: ^2.0.1
+
+dev_dependencies:
+  test: ^1.25.6
+  lints: ^6.0.0
+
+executables:
+  archify: archify
