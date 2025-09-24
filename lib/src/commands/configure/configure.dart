@@ -5,13 +5,10 @@ class ConfigureCommand {
     // 1️⃣ Create folders
     createBaseFolders();
 
-    // 2️⃣ Update docs
-    updateDocs();
-
-    // 3️⃣ Update README
+    // 2️⃣ Update README
     updateReadme();
 
-    // 4️⃣ Add packages
+    // 3️⃣ Add packages
     addDefaultPackages();
 
     print('✅ Project configured successfully!');

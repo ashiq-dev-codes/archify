@@ -2,7 +2,6 @@ library;
 
 export 'src/archify_cli.dart';
 export 'src/commands/configure/configure.dart';
-export 'src/commands/configure/docs/docs.dart';
 export 'src/commands/configure/folders/core/api/api_creator.dart';
 export 'src/commands/configure/folders/core/config/config_creator.dart';
 export 'src/commands/configure/folders/core/model/model_creator.dart';
