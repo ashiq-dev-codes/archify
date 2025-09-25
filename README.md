@@ -16,8 +16,6 @@ archify/
 │     ├─ archify_cli.dart          # CLI bootstrap
 │     ├─ commands/                 # Command modules
 │     │  ├─ configure/             # Project configuration commands
-│     │  │  ├─ docs/               # Docs generator
-│     │  │  │  └─ docs.dart
 │     │  │  ├─ folders/            # Folder creators for core/shared
 │     │  │  │  ├─ core/
 │     │  │  │  │  ├─ api/
@@ -48,7 +46,7 @@ archify/
 ## ⚡️ Features
 
 - **Configure Command**  
-  Creates the base project structure under `lib/core`, `lib/shared`, and `docs` with common folders like:
+  Creates the base project structure under `lib/core` and `lib/shared` with common folders like:
   - `config`
   - `api`
   - `model`

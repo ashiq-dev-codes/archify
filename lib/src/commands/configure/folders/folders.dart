@@ -1,7 +1,7 @@
 import 'package:archify/archify.dart';
 
 void createBaseFolders() {
-  final folders = ['lib/features', 'lib/core', 'lib/shared', 'docs'];
+  final folders = ['lib/features', 'lib/core', 'lib/shared'];
 
   for (final folder in folders) {
     createFolder(folder);
