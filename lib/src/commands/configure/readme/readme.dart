@@ -1,6 +1,13 @@
 import 'dart:io';
 
+/// Entry point
+void main() {
+  updateReadme();
+}
+
 /// Updates the project README with Archify usage instructions.
+/// If the section exists → replaces it.
+/// If not → appends it.
 void updateReadme() {
   final readme = File('README.md');
 
@@ -19,19 +26,28 @@ dart run archify configure
 
 # Generate a new feature/module (example: auth)
 dart run archify generate auth
-```
 ''';
 
   if (readme.existsSync()) {
-    final content = readme.readAsStringSync();
+    var content = readme.readAsStringSync();
+    // Match "## Archify" section until the next heading or EOF
+    final regex = RegExp(
+      r'## Archify[\s\S]*?(?=\n## |\n# |\$)',
+      multiLine: true,
+    );
 
-    if (!content.contains('## Archify')) {
-      readme.writeAsStringSync('$content\n\n$archifySection');
-      print('📄 Updated README.md with Archify section');
+    if (regex.hasMatch(content)) {
+      // Replace existing section
+      content = content.replaceFirst(regex, archifySection.trim());
+      readme.writeAsStringSync(content);
+      print('🔄 Updated Archify section in README.md');
     } else {
-      print('✅ README.md already contains Archify section, skipping.');
+      // Append new section
+      readme.writeAsStringSync('$content\n\n$archifySection');
+      print('📄 Added Archify section to README.md');
     }
   } else {
+    // Create fresh README
     readme.writeAsStringSync('# Project\n\n$archifySection');
     print('📄 Created README.md with Archify section');
   }
