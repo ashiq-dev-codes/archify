@@ -22,4 +22,4 @@ dev_dependencies:
   lints: ^6.0.0
 
 executables:
-  archify: bin/archify.dart
+  archify: archify
