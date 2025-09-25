@@ -3,6 +3,8 @@
 A sample command-line application with an entrypoint in `bin/`, organized library code in `lib/`, and example unit tests in `test/`.  
 Archify helps you **configure** and **generate** project structures with a clean architecture for Flutter/Dart projects.
 
+[![pub package](https://img.shields.io/pub/v/corextra.svg)](https://pub.dev/packages/archify)
+
 ---
 
 ## 📂 Project Structure
