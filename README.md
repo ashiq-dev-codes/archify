@@ -100,4 +100,3 @@ This generates:
 │  └─ widget/
 └─ profile_injection.dart
 ```
-# archify
