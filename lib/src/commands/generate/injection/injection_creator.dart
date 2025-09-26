@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:archify/archify.dart';
 import 'package:archify/src/extensions/string_extensions.dart';
 
@@ -5,6 +7,7 @@ void createInjectionFile(String featureName) {
   final packageName = getPackageName();
   final path = 'lib/features/$featureName/${featureName}_injection.dart';
 
+  // 1️⃣ Create injection.dart
   createFile(path, '''
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -41,4 +44,59 @@ List<BlocProvider<Cubit<Object>>> ${featureName}Blocs(
 ];
 
 ''');
+
+  // 2️⃣ Update injection_container.dart
+  _updateInjectionContainer(featureName);
+
+  // 3️⃣ Update App.dart MultiBlocProvider
+  _updateAppBlocs(featureName);
+}
+
+/// Updates injection_container.dart by adding init and clear calls
+void _updateInjectionContainer(String featureName) {
+  final file = File('lib/injection_container.dart');
+  if (!file.existsSync()) {
+    print('❌ injection_container.dart not found!');
+    return;
+  }
+
+  String content = file.readAsStringSync();
+
+  final initLine = '// Add your injections here';
+  final clearLine = '// Add your clears here';
+
+  final initCall = '    await init${featureName.capitalize()}Injection(sl);';
+  final clearCall = '    clear${featureName.capitalize()}(context);';
+
+  if (!content.contains(initCall)) {
+    content = content.replaceFirst(initLine, '$initLine\n$initCall');
+  }
+
+  if (!content.contains(clearCall)) {
+    content = content.replaceFirst(clearLine, '$clearLine\n$clearCall');
+  }
+
+  file.writeAsStringSync(content);
+  print('🧩 injection_container.dart updated with $featureName injections');
+}
+
+/// Updates App.dart MultiBlocProvider with feature blocs
+void _updateAppBlocs(String featureName) {
+  final file = File('lib/app.dart');
+  if (!file.existsSync()) {
+    print('❌ app.dart not found!');
+    return;
+  }
+
+  String content = file.readAsStringSync();
+
+  final marker = '// Add your blocs here';
+  final blocLine = '        ...${featureName}Blocs(context),';
+
+  if (!content.contains(blocLine)) {
+    content = content.replaceFirst(marker, '$marker\n$blocLine');
+  }
+
+  file.writeAsStringSync(content);
+  print('🧩 app.dart updated with $featureName blocs');
 }
