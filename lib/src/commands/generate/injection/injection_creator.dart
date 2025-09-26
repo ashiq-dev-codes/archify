@@ -46,14 +46,14 @@ List<BlocProvider<Cubit<Object>>> ${featureName}Blocs(
 ''');
 
   // 2️⃣ Update injection_container.dart
-  _updateInjectionContainer(featureName);
+  _updateInjectionContainer(packageName, featureName);
 
   // 3️⃣ Update App.dart MultiBlocProvider
-  _updateAppBlocs(featureName);
+  _updateAppBlocs(packageName, featureName);
 }
 
 /// Updates injection_container.dart by adding init and clear calls
-void _updateInjectionContainer(String featureName) {
+void _updateInjectionContainer(String packageName, String featureName) {
   final file = File('lib/injection_container.dart');
   if (!file.existsSync()) {
     print('❌ injection_container.dart not found!');
@@ -61,7 +61,19 @@ void _updateInjectionContainer(String featureName) {
   }
 
   String content = file.readAsStringSync();
+  final importLine =
+      "import 'package:$packageName/features/$featureName/${featureName}_injection.dart';";
 
+  // Add import at the top if not present
+  if (!content.contains(importLine)) {
+    // Insert after the last existing import
+    final lastImportIndex = content.lastIndexOf('import');
+    final nextLineIndex = content.indexOf('\n', lastImportIndex);
+    content =
+        '${content.substring(0, nextLineIndex + 1)}$importLine\n${content.substring(nextLineIndex + 1)}';
+  }
+
+  // Add init and clear calls
   final initLine = '// Add your injections here';
   final clearLine = '// Add your clears here';
 
@@ -77,11 +89,13 @@ void _updateInjectionContainer(String featureName) {
   }
 
   file.writeAsStringSync(content);
-  print('🧩 injection_container.dart updated with $featureName injections');
+  print(
+    '🧩 injection_container.dart updated with $featureName injections & import',
+  );
 }
 
 /// Updates App.dart MultiBlocProvider with feature blocs
-void _updateAppBlocs(String featureName) {
+void _updateAppBlocs(String packageName, String featureName) {
   final file = File('lib/app.dart');
   if (!file.existsSync()) {
     print('❌ app.dart not found!');
@@ -89,7 +103,18 @@ void _updateAppBlocs(String featureName) {
   }
 
   String content = file.readAsStringSync();
+  final importLine =
+      "import 'package:$packageName/features/$featureName/${featureName}_injection.dart';";
 
+  // Add import at the top if not present
+  if (!content.contains(importLine)) {
+    final lastImportIndex = content.lastIndexOf('import');
+    final nextLineIndex = content.indexOf('\n', lastImportIndex);
+    content =
+        '${content.substring(0, nextLineIndex + 1)}$importLine\n${content.substring(nextLineIndex + 1)}';
+  }
+
+  // Add bloc lines
   final marker = '// Add your blocs here';
   final blocLine = '        ...${featureName}Blocs(context),';
 
@@ -98,5 +123,5 @@ void _updateAppBlocs(String featureName) {
   }
 
   file.writeAsStringSync(content);
-  print('🧩 app.dart updated with $featureName blocs');
+  print('🧩 app.dart updated with $featureName blocs & import');
 }
