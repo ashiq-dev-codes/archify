@@ -1,19 +1,8 @@
-import 'dart:io';
+// lib/src/version.dart
 
-import 'package:yaml/yaml.dart';
+/// CLI package version.
+///
+/// ⚠️ IMPORTANT: Keep this in sync with `pubspec.yaml`.
+const packageVersion = '1.0.3';
 
-String getCliVersion() {
-  try {
-    final scriptPath = Platform.script.toFilePath();
-    final cliDir = Directory(scriptPath).parent.parent; // go up to package root
-    final pubspec = File('${cliDir.path}/pubspec.yaml');
-
-    if (!pubspec.existsSync()) return 'unknown';
-
-    final content = pubspec.readAsStringSync();
-    final doc = loadYaml(content);
-    return doc['version'] ?? 'unknown';
-  } catch (_) {
-    return 'unknown';
-  }
-}
+String getCliVersion() => packageVersion;

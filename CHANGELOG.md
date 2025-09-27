@@ -1,4 +1,4 @@
-## 1.0.2
+## 1.0.3
 
 * Initial release of Archify CLI.
 * Added **configure command** to create base project structure (`lib/core`, `lib/shared`).
