@@ -1,12 +1,12 @@
 # Archify CLI
 
-Archify is a CLI tool for Flutter/Dart developers to quickly scaffold projects and features following clean architecture principles. It helps maintain a consistent structure and reduces boilerplate.
+Archify is a CLI tool for Flutter/Dart developers to quickly scaffold projects and features following clean architecture principles. It helps maintain a consistent structure, reduces boilerplate, and now supports **fully custom project architectures**.
 
 [![pub package](https://img.shields.io/pub/v/archify.svg)](https://pub.dev/packages/archify)
 
 ---
 
-## 📂 Project Structure
+## 📂 Project Structure (Default)
 
 ```
 project/
@@ -52,9 +52,11 @@ project/
 └─ README.md
 ```
 
+> ⚠️ You can still customize your project structure completely using **custom templates**.
+
 ---
 
-## ⚡️ Features
+## 🔦 Features
 
 * **Configure Command**
   Creates the base project structure under `lib/core` and `lib/shared` with common folders like:
@@ -66,19 +68,27 @@ project/
   * `widgets`
 
 * **Generate Command**
-  Quickly scaffolds a new feature/module with layers:
+  Quickly scaffolds a new feature/module with default layers:
 
   * `data`
   * `domain`
   * `presentation`
-  * `[feature]_injection.dart`
+  * `[feature]_injection.dart` (for Bloc wiring)
 
-* **Automatic Injection & Blocs Wiring**
-  When you generate a feature, Archify will also:
+* **Custom Command**
+  Generate **fully custom features** using a YAML template. Supports:
 
-  * Create `[feature]_injection.dart` for registering repositories, data sources, and blocs.
-  * Automatically update `injection_container.dart` with init and clear functions.
-  * Update `app.dart` `MultiBlocProvider` with your new feature blocs.
+  * Arbitrary folder/file structures
+  * Placeholder `{feature_name}` in file/folder names
+  * Nested folders and files
+  * Optional injection or any state management structure
+
+* **Automatic Injection & Bloc Wiring**
+  (Only for default generate command)
+
+  * Creates `[feature]_injection.dart` for repositories, data sources, and blocs.
+  * Automatically updates `injection_container.dart`.
+  * Updates `app.dart` `MultiBlocProvider` with new feature blocs.
 
 * **Utils**
 
@@ -96,24 +106,20 @@ project/
 dart run archify configure
 ```
 
-> ⚠️ **Note:** Running this on an existing project may overwrite some files. Archify will prompt for confirmation to avoid accidental data loss.
+> ⚠️ Running this on an existing project may overwrite files. Archify will prompt before overwriting.
 
-### Generate a new feature/module
+---
+
+### Generate a new feature/module (Default)
 
 ```bash
 dart run archify generate auth
 ```
 
-### Example
-
-```bash
-dart run archify generate profile
-```
-
-This generates:
+Example output:
 
 ```
-lib/features/profile/
+lib/features/auth/
 ├─ data/
 │  ├─ data_source_impl/
 │  └─ repo_impl/
@@ -124,7 +130,58 @@ lib/features/profile/
 │  ├─ cubit/
 │  ├─ page/
 │  └─ widget/
-└─ profile_injection.dart
+└─ auth_injection.dart
 ```
 
 ---
+
+### Generate a fully custom feature
+
+1. Create a YAML template (`custom_feature_template.yaml`):
+
+```yaml
+feature:
+  "{feature_name}":
+    - name: "screens"
+      type: folder
+      children:
+        - name: "{feature_name}_page.dart"
+          type: file
+    - name: "models"
+      type: folder
+      children:
+        - name: "{feature_name}_model.dart"
+          type: file
+    - name: "services"
+      type: folder
+      children:
+        - name: "api"
+          type: folder
+          children:
+            - name: "{feature_name}_api.dart"
+              type: file
+```
+
+2. Run the custom generation:
+
+```bash
+dart run archify custom auth --template arch/custom_feature_template.yaml
+```
+
+This creates:
+
+```
+lib/auth/screens/auth_page.dart
+lib/auth/models/auth_model.dart
+lib/auth/services/api/auth_api.dart
+```
+
+*Supports nested folders and files with dynamic names using `{feature_name}`.*
+
+---
+
+### Version
+
+```bash
+dart run archify version
+```

@@ -2,7 +2,12 @@ import 'dart:io';
 
 import 'package:archify/src/commands/custom/custom_creator.dart';
 
+/// Handles the `custom` command to generate a feature from a YAML template.
 class CustomCommand {
+  /// Runs the custom feature generation.
+  ///
+  /// Usage:
+  /// dart run archify custom &lt;feature_name&gt; --template path/to/template.yaml
   void run(List<String> args) {
     if (args.isEmpty) {
       print('❌ Feature name and template path are required.');
@@ -12,7 +17,6 @@ class CustomCommand {
 
     final featureName = args.first;
 
-    // Look for --template option
     final templateIndex = args.indexOf('--template');
     if (templateIndex == -1 || templateIndex + 1 >= args.length) {
       print('❌ Template path is required.');
@@ -21,9 +25,9 @@ class CustomCommand {
     }
 
     final templatePath = args[templateIndex + 1];
-
     final featureDir = Directory('lib/$featureName');
 
+    // Check if feature already exists
     if (featureDir.existsSync()) {
       // Prompt user
       stdout.write(
@@ -42,6 +46,7 @@ class CustomCommand {
       print('✅ Old feature backed up as: ${backupDir.path}');
     }
 
+    // Generate feature
     try {
       createCustomFeature(featureName: featureName, templatePath: templatePath);
       print('✅ Custom feature "$featureName" generated successfully.');

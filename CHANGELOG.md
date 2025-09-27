@@ -1,8 +1,8 @@
-## 1.0.4
+## 1.0.5
 
-* Added **force flag** to `configure` command to overwrite existing files without prompt.
-* Improved **generate command** to handle nested features and avoid overwriting existing layers.
-* Added **better logging** for all commands with success/error indicators.
-* Updated `version_utils` to include semantic versioning helpers.
-* Minor bug fixes in `pubspec_manager` for adding dependencies.
-* Enhanced README with additional usage examples and troubleshooting tips.
+* Added **custom command** to generate fully custom features based on YAML templates.
+* Custom feature generation now supports **dynamic placeholders** like `{feature_name}` in folder and file names.
+* Improved **YAML parsing** and validation for nested folders and files.
+* Added **backup of existing feature folders** if the feature already exists before regeneration.
+* Updated README with **custom command usage examples**.
+* Minor improvements and bug fixes in `fs_utils` and `custom_creator`.
