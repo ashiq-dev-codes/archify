@@ -17,17 +17,24 @@ void createCustomFeature({
   final featureMap = yamlMap['feature'] ?? {};
 
   featureMap.forEach((key, children) {
+    // Replace placeholders in folder name
     final featureKey = key.replaceAll("{feature_name}", featureName);
-    _processItems("lib/$featureKey", children);
+    _processItems("lib/$featureKey", children, featureName: featureName);
   });
 }
 
 /// Recursive function to create folders and files based on explicit type
-void _processItems(String basePath, dynamic items) {
+void _processItems(
+  String basePath,
+  dynamic items, {
+  required String featureName,
+}) {
   if (items is List) {
     for (var item in items) {
       if (item is Map) {
-        final name = item['name'] as String;
+        // Replace placeholders in name
+        var name = item['name'] as String;
+        name = name.replaceAll("{feature_name}", featureName);
         final type = item['type'] as String;
 
         if (type == 'folder') {
@@ -35,7 +42,11 @@ void _processItems(String basePath, dynamic items) {
           createFolder(folderPath);
 
           if (item.containsKey('children')) {
-            _processItems(folderPath, item['children']);
+            _processItems(
+              folderPath,
+              item['children'],
+              featureName: featureName,
+            );
           }
         } else if (type == 'file') {
           final filePath = '$basePath/$name';
