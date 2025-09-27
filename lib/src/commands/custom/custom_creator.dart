@@ -13,13 +13,31 @@ void createCustomFeature({
     throw Exception('Template file not found: $templatePath');
   }
 
-  final yamlMap = loadYaml(file.readAsStringSync());
-  final featureMap = yamlMap['feature'] ?? {};
+  YamlMap yamlMap;
+  try {
+    yamlMap = loadYaml(file.readAsStringSync());
+  } catch (e) {
+    throw Exception('❌ Failed to parse YAML: $e');
+  }
+
+  final featureMap = yamlMap['feature'];
+  if (featureMap == null || featureMap is! Map) {
+    throw Exception('❌ Invalid YAML: "feature" key missing or invalid');
+  }
 
   featureMap.forEach((key, children) {
+    if (children == null || children is! List) {
+      throw Exception('❌ Invalid YAML: children must be a list under "$key"');
+    }
+
     // Replace placeholders in folder name
     final featureKey = key.replaceAll("{feature_name}", featureName);
-    _processItems("lib/$featureKey", children, featureName: featureName);
+
+    try {
+      _processItems("lib/$featureKey", children, featureName: featureName);
+    } catch (e) {
+      throw Exception('❌ Failed to generate feature "$featureName": $e');
+    }
   });
 }
 
@@ -29,30 +47,44 @@ void _processItems(
   dynamic items, {
   required String featureName,
 }) {
-  if (items is List) {
-    for (var item in items) {
-      if (item is Map) {
-        // Replace placeholders in name
-        var name = item['name'] as String;
-        name = name.replaceAll("{feature_name}", featureName);
-        final type = item['type'] as String;
+  if (items is! List) {
+    throw Exception('Expected a list of items under "$basePath"');
+  }
 
-        if (type == 'folder') {
-          final folderPath = '$basePath/$name';
-          createFolder(folderPath);
+  for (var item in items) {
+    if (item is! Map ||
+        !item.containsKey('name') ||
+        !item.containsKey('type')) {
+      throw Exception(
+        'Each item must be a map with "name" and "type" under "$basePath"',
+      );
+    }
 
-          if (item.containsKey('children')) {
-            _processItems(
-              folderPath,
-              item['children'],
-              featureName: featureName,
-            );
-          }
-        } else if (type == 'file') {
-          final filePath = '$basePath/$name';
-          createFile(filePath, '');
+    // Replace placeholders in name
+    var name = item['name'] as String;
+    name = name.replaceAll("{feature_name}", featureName);
+    final type = item['type'] as String;
+
+    if (type != 'folder' && type != 'file') {
+      throw Exception(
+        'Invalid type "$type" for "$name". Must be "folder" or "file".',
+      );
+    }
+
+    if (type == 'folder') {
+      final folderPath = '$basePath/$name';
+      createFolder(folderPath);
+
+      if (item.containsKey('children')) {
+        final children = item['children'];
+        if (children == null || children is! List) {
+          throw Exception('Children of folder "$name" must be a list');
         }
+        _processItems(folderPath, children, featureName: featureName);
       }
+    } else if (type == 'file') {
+      final filePath = '$basePath/$name';
+      createFile(filePath, '');
     }
   }
 }
