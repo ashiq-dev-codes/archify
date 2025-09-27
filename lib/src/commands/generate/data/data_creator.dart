@@ -1,5 +1,5 @@
-import 'package:archify/archify.dart';
 import 'package:archify/src/extensions/string_extensions.dart';
+import 'package:archify/src/utils/fs_utils.dart';
 
 void createDataLayer(String featureName) {
   final packageName = getPackageName();

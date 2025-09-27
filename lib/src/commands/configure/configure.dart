@@ -1,8 +1,15 @@
 import 'dart:io';
 
-import 'package:archify/archify.dart';
+import 'package:archify/src/commands/configure/folders/folders.dart';
+import 'package:archify/src/commands/configure/packages/packages.dart';
+import 'package:archify/src/commands/configure/readme/readme.dart';
 
+/// Configures a Flutter project by creating folders, updating README,
+/// adding default packages, and optionally backing up existing code.
 class ConfigureCommand {
+  /// Runs the configure command.
+  ///
+  /// If [force] is `true`, existing files will be overwritten without confirmation.
   void run({bool force = false}) {
     // Step 0: Check if lib/main.dart exists
     final mainFile = File('lib/main.dart');

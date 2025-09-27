@@ -1,5 +1,5 @@
-import 'package:archify/archify.dart';
 import 'package:archify/src/extensions/string_extensions.dart';
+import 'package:archify/src/utils/fs_utils.dart';
 
 void createPresentationLayer(String featureName) {
   final packageName = getPackageName();
