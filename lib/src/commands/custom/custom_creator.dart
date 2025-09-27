@@ -61,9 +61,19 @@ void _processItems(
     }
 
     // Replace placeholders in name
-    var name = item['name'] as String;
+    var name = item['name'].toString();
+
+    // Warn if placeholder may cause YAML issues
+    if (name.contains("{feature_name}") &&
+        !name.startsWith('"') &&
+        !name.startsWith("'")) {
+      print(
+        '⚠️ Warning: "{feature_name}" placeholder in "$name" should be quoted in YAML.',
+      );
+    }
+
     name = name.replaceAll("{feature_name}", featureName);
-    final type = item['type'] as String;
+    final type = item['type'].toString();
 
     if (type != 'folder' && type != 'file') {
       throw Exception(
