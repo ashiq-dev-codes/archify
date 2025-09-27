@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:archify/src/utils/fs_utils.dart';
 import 'package:yaml/yaml.dart';
 
-/// Creates a custom feature based on a YAML template
+/// Creates a custom feature based on a type-driven YAML template
 void createCustomFeature({
   required String featureName,
   required String templatePath,
@@ -18,56 +18,30 @@ void createCustomFeature({
 
   featureMap.forEach((key, children) {
     final featureKey = key.replaceAll("{feature_name}", featureName);
-    _createFoldersAndFiles("lib/$featureKey", children, featureName);
+    _processItems("lib/$featureKey", children);
   });
 }
 
-/// Recursive folder/file creation using fs_utils
-void _createFoldersAndFiles(
-  String basePath,
-  dynamic items,
-  String featureName,
-) {
+/// Recursive function to create folders and files based on explicit type
+void _processItems(String basePath, dynamic items) {
   if (items is List) {
     for (var item in items) {
-      if (item is String) {
-        final folderPath = "$basePath/$item";
-        createFolder(folderPath);
+      if (item is Map) {
+        final name = item['name'] as String;
+        final type = item['type'] as String;
 
-        // Automatically create default files
-        _createDefaultFile(folderPath, item, featureName);
-      } else if (item is Map) {
-        item.forEach((parent, children) {
-          final folderPath = "$basePath/$parent";
+        if (type == 'folder') {
+          final folderPath = '$basePath/$name';
           createFolder(folderPath);
-          _createFoldersAndFiles(folderPath, children, featureName);
-        });
+
+          if (item.containsKey('children')) {
+            _processItems(folderPath, item['children']);
+          }
+        } else if (type == 'file') {
+          final filePath = '$basePath/$name';
+          createFile(filePath, '');
+        }
       }
     }
-  }
-}
-
-/// Creates default files based on folder type using fs_utils
-void _createDefaultFile(
-  String folderPath,
-  String folderName,
-  String featureName,
-) {
-  String? fileName;
-
-  if (folderName.toLowerCase() == 'screens') {
-    fileName = '${featureName}_page.dart';
-  } else if (folderName.toLowerCase() == 'models') {
-    fileName = '${featureName}_model.dart';
-  } else if (folderName.toLowerCase() == 'services') {
-    fileName = '${featureName}_service.dart';
-  } else if (folderName.toLowerCase() == 'api' ||
-      folderName.toLowerCase() == 'view') {
-    fileName = '${featureName}_${folderName.toLowerCase()}.dart';
-  }
-
-  if (fileName != null) {
-    final filePath = '$folderPath/$fileName';
-    createFile(filePath, ''); // create empty file
   }
 }
