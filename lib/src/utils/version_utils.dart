@@ -3,6 +3,6 @@
 /// CLI package version.
 ///
 /// ⚠️ IMPORTANT: Keep this in sync with `pubspec.yaml`.
-const packageVersion = '1.0.3';
+const packageVersion = '1.0.4';
 
 String getCliVersion() => packageVersion;
