@@ -135,7 +135,7 @@ void main() async {
         options.dsn =
             kDebugMode
                 ? ''
-                : 'https://970fac8be72e7c4d3331cfeab85092c9@o4507516184821760.ingest.us.sentry.io/4508952736169984';
+                : '';
         // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
         // We recommend adjusting this value in production.
         options.tracesSampleRate = 1.0;
