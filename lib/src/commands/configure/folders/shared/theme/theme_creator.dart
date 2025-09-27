@@ -1,4 +1,4 @@
-import 'package:archify/archify.dart';
+import 'package:archify/src/utils/fs_utils.dart';
 
 void createThemeFolder() {
   final themePath = 'lib/shared/theme';

@@ -1,4 +1,4 @@
-import 'package:archify/archify.dart';
+import 'package:archify/src/utils/fs_utils.dart';
 
 /// Creates the config folder and then the necessary files inside it
 void createConfigFolder() {

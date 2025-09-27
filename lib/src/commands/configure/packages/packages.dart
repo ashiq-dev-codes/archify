@@ -1,4 +1,4 @@
-import 'package:archify/archify.dart';
+import 'package:archify/src/commands/configure/packages/pubspec_manager.dart';
 
 void addDefaultPackages() {
   final packagesToAdd = {

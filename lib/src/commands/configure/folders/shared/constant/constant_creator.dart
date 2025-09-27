@@ -1,4 +1,4 @@
-import 'package:archify/archify.dart';
+import 'package:archify/src/utils/fs_utils.dart';
 
 void createConstantFolder() {
   final constantPath = 'lib/shared/constant';

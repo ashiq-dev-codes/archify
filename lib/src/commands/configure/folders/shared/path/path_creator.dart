@@ -1,4 +1,4 @@
-import 'package:archify/archify.dart';
+import 'package:archify/src/utils/fs_utils.dart';
 
 /// Creates the `lib/shared/path` folder and its files
 void createPathFolder() {
