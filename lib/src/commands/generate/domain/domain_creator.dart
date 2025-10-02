@@ -2,7 +2,7 @@ import 'package:archify/src/extensions/string_extensions.dart';
 import 'package:archify/src/utils/fs_utils.dart';
 
 void createDomainLayer(String featureName) {
-  final basePath = 'lib/features/$featureName/domain';
+  final basePath = 'lib/feature/$featureName/domain';
   final folders = ['data_source', 'repo'];
 
   for (final folder in folders) {

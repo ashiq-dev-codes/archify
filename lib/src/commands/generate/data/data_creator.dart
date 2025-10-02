@@ -3,7 +3,7 @@ import 'package:archify/src/utils/fs_utils.dart';
 
 void createDataLayer(String featureName) {
   final packageName = getPackageName();
-  final basePath = 'lib/features/$featureName/data';
+  final basePath = 'lib/feature/$featureName/data';
   final folders = ['data_source_impl', 'repo_impl'];
 
   for (final folder in folders) {
@@ -14,7 +14,7 @@ void createDataLayer(String featureName) {
   createFile(
     '$basePath/data_source_impl/${featureName}_data_source_impl.dart',
     '''
-import 'package:$packageName/features/$featureName/domain/data_source/${featureName}_data_source.dart';
+import 'package:$packageName/feature/$featureName/domain/data_source/${featureName}_data_source.dart';
 
     // Add your apis here
     // Example:
@@ -41,8 +41,8 @@ class ${featureName.capitalize()}DataSourceImpl implements ${featureName.capital
 
   // 2️⃣ Create repo_impl.dart
   createFile('$basePath/repo_impl/${featureName}_repo_impl.dart', '''
-import 'package:$packageName/features/$featureName/domain/data_source/${featureName}_data_source.dart';
-import 'package:$packageName/features/$featureName/domain/repo/${featureName}_repo.dart';
+import 'package:$packageName/feature/$featureName/domain/data_source/${featureName}_data_source.dart';
+import 'package:$packageName/feature/$featureName/domain/repo/${featureName}_repo.dart';
 
 class ${featureName.capitalize()}RepoImpl implements ${featureName.capitalize()}Repo {
   ${featureName.capitalize()}RepoImpl({required this.remote});
