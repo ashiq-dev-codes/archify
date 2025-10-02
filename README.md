@@ -17,7 +17,7 @@ project/
 │     │  ├─ config.dart
 │     │  └─ dio.dart
 │     ├─ model/
-│  └─ features/
+│  └─ feature/
 │  └─ shared/
 │     ├─ constant/
 │     │  └─ constant.dart
@@ -119,7 +119,7 @@ dart run archify generate auth
 Example output:
 
 ```
-lib/features/auth/
+lib/feature/auth/
 ├─ data/
 │  ├─ data_source_impl/
 │  └─ repo_impl/

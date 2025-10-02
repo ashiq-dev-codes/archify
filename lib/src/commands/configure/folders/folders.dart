@@ -10,7 +10,7 @@ import 'package:archify/src/commands/configure/folders/shared/widget/widget_crea
 import 'package:archify/src/utils/fs_utils.dart';
 
 void createBaseFolders() {
-  final folders = ['lib/features', 'lib/core', 'lib/shared'];
+  final folders = ['lib/feature', 'lib/core', 'lib/shared'];
 
   for (final folder in folders) {
     createFolder(folder);

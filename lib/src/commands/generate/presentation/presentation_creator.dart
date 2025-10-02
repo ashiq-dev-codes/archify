@@ -3,7 +3,7 @@ import 'package:archify/src/utils/fs_utils.dart';
 
 void createPresentationLayer(String featureName) {
   final packageName = getPackageName();
-  final basePath = 'lib/features/$featureName/presentation';
+  final basePath = 'lib/feature/$featureName/presentation';
   final folders = ['cubit', 'page', 'widget'];
 
   for (final folder in folders) {
@@ -14,7 +14,7 @@ void createPresentationLayer(String featureName) {
   createFile('$basePath/cubit/${featureName}_cubit.dart', '''
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:$packageName/features/$featureName/domain/repo/${featureName}_repo.dart';
+import 'package:$packageName/feature/$featureName/domain/repo/${featureName}_repo.dart';
 
 part '${featureName}_state.dart';
 

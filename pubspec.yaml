@@ -1,12 +1,12 @@
 name: archify
 description: A CLI tool for generating clean architecture structure in Flutter projects.
-version: 1.0.5
+version: 1.0.6
 homepage: https://github.com/ashiq-dev-codes/archify
 repository: https://github.com/ashiq-dev-codes/archify.git
 issue_tracker: https://github.com/ashiq-dev-codes/archify/issues
 
 environment:
-  sdk: ^3.8.1
+  sdk: ^3.7.0
 
 platforms:
   android:
