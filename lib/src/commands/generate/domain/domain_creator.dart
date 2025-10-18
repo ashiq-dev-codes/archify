@@ -11,7 +11,7 @@ void createDomainLayer(String featureName) {
 
   // 1️⃣ Create _data_source.dart
   createFile('$basePath/data_source/${featureName}_data_source.dart', '''
-abstract class ${featureName.capitalize()}DataSource {
+abstract class ${featureName.toPascalCase()}DataSource {
   // Add your data source here
   // Example:
   // Future<bool> login();
@@ -20,7 +20,7 @@ abstract class ${featureName.capitalize()}DataSource {
 
   // 2️⃣ Create _repo.dart
   createFile('$basePath/repo/${featureName}_repo.dart', '''
-abstract class ${featureName.capitalize()}Repo {
+abstract class ${featureName.toPascalCase()}Repo {
   // Add your repo here
   // Example:
   // Future<bool> sendOTP();

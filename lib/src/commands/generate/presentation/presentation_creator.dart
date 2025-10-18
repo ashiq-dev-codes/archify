@@ -18,12 +18,12 @@ import 'package:$packageName/feature/$featureName/domain/repo/${featureName}_rep
 
 part '${featureName}_state.dart';
 
-class ${featureName.capitalize()}Cubit extends Cubit<${featureName.capitalize()}State> {
-  ${featureName.capitalize()}Cubit({required this.repo}) : super(${featureName.capitalize()}Initial());
-  final ${featureName.capitalize()}Repo repo;
+class ${featureName.toPascalCase()}Cubit extends Cubit<${featureName.toPascalCase()}State> {
+  ${featureName.toPascalCase()}Cubit({required this.repo}) : super(${featureName.toPascalCase()}Initial());
+  final ${featureName.toPascalCase()}Repo repo;
 
   void get clear {
-    emit(${featureName.capitalize()}Initial());
+    emit(${featureName.toPascalCase()}Initial());
   }
 
   // Add your bloc functions here
@@ -40,28 +40,28 @@ class ${featureName.capitalize()}Cubit extends Cubit<${featureName.capitalize()}
   createFile('$basePath/cubit/${featureName}_state.dart', '''
 part of '${featureName}_cubit.dart';
 
-abstract class ${featureName.capitalize()}State extends Equatable {
-  const ${featureName.capitalize()}State();
+abstract class ${featureName.toPascalCase()}State extends Equatable {
+  const ${featureName.toPascalCase()}State();
 
   @override
   List<Object> get props => [];
 }
 
-class ${featureName.capitalize()}Initial extends ${featureName.capitalize()}State {}
+class ${featureName.toPascalCase()}Initial extends ${featureName.toPascalCase()}State {}
 
-class ${featureName.capitalize()}Loading extends ${featureName.capitalize()}State {}
+class ${featureName.toPascalCase()}Loading extends ${featureName.capitalize()}State {}
 
-class ${featureName.capitalize()}Success extends ${featureName.capitalize()}State {
+class ${featureName.toPascalCase()}Success extends ${featureName.toPascalCase()}State {
   final Object object;
-  const ${featureName.capitalize()}Success({required this.object});
+  const ${featureName.toPascalCase()}Success({required this.object});
 
   @override
   List<Object> get props => [object];
 }
 
-class ${featureName.capitalize()}Failure extends ${featureName.capitalize()}State {
+class ${featureName.toPascalCase()}Failure extends ${featureName.toPascalCase()}State {
   final Object error;
-  const ${featureName.capitalize()}Failure({required this.error});
+  const ${featureName.toPascalCase()}Failure({required this.error});
 
   @override
   List<Object> get props => [error];
@@ -72,8 +72,8 @@ class ${featureName.capitalize()}Failure extends ${featureName.capitalize()}Stat
   createFile('$basePath/page/${featureName}_page.dart', '''
 import 'package:flutter/material.dart';
 
-class ${featureName.capitalize()}Screen extends StatelessWidget {
-  const ${featureName.capitalize()}Screen({super.key});
+class ${featureName.toPascalCase()}Screen extends StatelessWidget {
+  const ${featureName.toPascalCase()}Screen({super.key});
 
   @override
   Widget build(BuildContext context) {

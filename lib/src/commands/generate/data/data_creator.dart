@@ -20,7 +20,7 @@ import 'package:$packageName/feature/$featureName/domain/data_source/${featureNa
     // Example:
     // const String loginApi = 'login';
 
-class ${featureName.capitalize()}DataSourceImpl implements ${featureName.capitalize()}DataSource{
+class ${featureName.toPascalCase()}DataSourceImpl implements ${featureName.toPascalCase()}DataSource{
     // Add your data source implements here
     // Example:
     /*
@@ -44,9 +44,9 @@ class ${featureName.capitalize()}DataSourceImpl implements ${featureName.capital
 import 'package:$packageName/feature/$featureName/domain/data_source/${featureName}_data_source.dart';
 import 'package:$packageName/feature/$featureName/domain/repo/${featureName}_repo.dart';
 
-class ${featureName.capitalize()}RepoImpl implements ${featureName.capitalize()}Repo {
-  ${featureName.capitalize()}RepoImpl({required this.remote});
-  final ${featureName.capitalize()}DataSource remote;
+class ${featureName.toPascalCase()}RepoImpl implements ${featureName.toPascalCase()}Repo {
+  ${featureName.toPascalCase()}RepoImpl({required this.remote});
+  final ${featureName.toPascalCase()}DataSource remote;
 
   // Add your repo implements here
   // Example:

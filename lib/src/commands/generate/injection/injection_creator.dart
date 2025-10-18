@@ -20,27 +20,27 @@ import 'package:$packageName/feature/$featureName/presentation/cubit/${featureNa
 import 'package:$packageName/injection_container.dart';
 
 
-Future<void> init${featureName.capitalize()}Injection(GetIt sl) async {
+Future<void> init${featureName.toPascalCase()}Injection(GetIt sl) async {
   //* Blocs
-  sl.registerLazySingleton(() => ${featureName.capitalize()}Cubit(repo: sl()));
+  sl.registerLazySingleton(() => ${featureName.toPascalCase()}Cubit(repo: sl()));
 
   //* Use cases
 
   //* Repository
-  sl.registerLazySingleton<${featureName.capitalize()}Repo>(() => ${featureName.capitalize()}RepoImpl(remote: sl()));
+  sl.registerLazySingleton<${featureName.toPascalCase()}Repo>(() => ${featureName.toPascalCase()}RepoImpl(remote: sl()));
 
   //* Data sources
-  sl.registerLazySingleton<${featureName.capitalize()}DataSource>(() => ${featureName.capitalize()}DataSourceImpl());
+  sl.registerLazySingleton<${featureName.toPascalCase()}DataSource>(() => ${featureName.toPascalCase()}DataSourceImpl());
 }
 
-void clear${featureName.capitalize()}(BuildContext context) {
-  context.read<${featureName.capitalize()}Cubit>().clear;
+void clear${featureName.toPascalCase()}(BuildContext context) {
+  context.read<${featureName.toPascalCase()}Cubit>().clear;
 }
 
-List<BlocProvider<Cubit<Object>>> ${featureName}Blocs(
+List<BlocProvider<Cubit<Object>>> ${featureName.toCamelCase()}Blocs(
   BuildContext context,
 ) => <BlocProvider<Cubit<Object>>>[
-  BlocProvider<${featureName.capitalize()}Cubit>(create: (BuildContext context) => sl<${featureName.capitalize()}Cubit>()),
+  BlocProvider<${featureName.toPascalCase()}Cubit>(create: (BuildContext context) => sl<${featureName.toPascalCase()}Cubit>()),
 ];
 
 ''');
@@ -64,28 +64,32 @@ void _updateInjectionContainer(String packageName, String featureName) {
   final importLine =
       "import 'package:$packageName/feature/$featureName/${featureName}_injection.dart';";
 
-  // Add import at the top if not present
+  // ✅ Add import if missing
   if (!content.contains(importLine)) {
-    // Insert after the last existing import
     final lastImportIndex = content.lastIndexOf('import');
     final nextLineIndex = content.indexOf('\n', lastImportIndex);
     content =
         '${content.substring(0, nextLineIndex + 1)}$importLine\n${content.substring(nextLineIndex + 1)}';
   }
 
-  // Add init and clear calls
-  final initLine = '// Add your injections here';
-  final clearLine = '// Add your clears here';
+  final pascal = featureName.toPascalCase();
 
-  final initCall = '    await init${featureName.capitalize()}Injection(sl);';
-  final clearCall = '    clear${featureName.capitalize()}(context);';
+  final initCall = '    await init${pascal}Injection(sl);';
 
+  // ✅ Insert new init call inside `init()` before closing brace
   if (!content.contains(initCall)) {
-    content = content.replaceFirst(initLine, '$initLine\n$initCall');
-  }
+    // Match the closing brace of the init() method
+    final initRegex = RegExp(
+      r'static\s+Future<void>\s+init\([^)]*\)\s*async\s*{([\s\S]*?)\n\s*}',
+      multiLine: true,
+    );
 
-  if (!content.contains(clearCall)) {
-    content = content.replaceFirst(clearLine, '$clearLine\n$clearCall');
+    final match = initRegex.firstMatch(content);
+    if (match != null) {
+      final methodBody = match.group(1)!;
+      final updatedBody = '$methodBody\n$initCall';
+      content = content.replaceFirst(methodBody, updatedBody);
+    }
   }
 
   file.writeAsStringSync(content);
@@ -106,7 +110,7 @@ void _updateAppBlocs(String packageName, String featureName) {
   final importLine =
       "import 'package:$packageName/feature/$featureName/${featureName}_injection.dart';";
 
-  // Add import at the top if not present
+  // ✅ Add import if missing
   if (!content.contains(importLine)) {
     final lastImportIndex = content.lastIndexOf('import');
     final nextLineIndex = content.indexOf('\n', lastImportIndex);
@@ -114,12 +118,19 @@ void _updateAppBlocs(String packageName, String featureName) {
         '${content.substring(0, nextLineIndex + 1)}$importLine\n${content.substring(nextLineIndex + 1)}';
   }
 
-  // Add bloc lines
-  final marker = '// Add your blocs here';
-  final blocLine = '        ...${featureName}Blocs(context),';
+  final camel = featureName.toCamelCase();
+  final blocLine = '          ...${camel}Blocs(context),';
 
-  if (!content.contains(blocLine)) {
-    content = content.replaceFirst(marker, '$marker\n$blocLine');
+  // ✅ Find the providers list and inject before closing bracket
+  final providerRegex = RegExp(r'providers:\s*\[(.*?)\n\s*\],', dotAll: true);
+
+  final match = providerRegex.firstMatch(content);
+  if (match != null) {
+    final listBody = match.group(1)!;
+    if (!listBody.contains(blocLine)) {
+      final updatedList = '$listBody\n$blocLine';
+      content = content.replaceFirst(listBody, updatedList);
+    }
   }
 
   file.writeAsStringSync(content);
