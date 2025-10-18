@@ -49,7 +49,7 @@ abstract class ${featureName.toPascalCase()}State extends Equatable {
 
 class ${featureName.toPascalCase()}Initial extends ${featureName.toPascalCase()}State {}
 
-class ${featureName.toPascalCase()}Loading extends ${featureName.capitalize()}State {}
+class ${featureName.toPascalCase()}Loading extends ${featureName.toPascalCase()}State {}
 
 class ${featureName.toPascalCase()}Success extends ${featureName.toPascalCase()}State {
   final Object object;

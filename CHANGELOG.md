@@ -1,4 +1,4 @@
-## 1.0.7
+## 1.0.8
 
 * Added **custom command** to generate fully custom features based on YAML templates.
 * Custom feature generation now supports **dynamic placeholders** like `{feature_name}` in folder and file names.
