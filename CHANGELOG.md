@@ -13,8 +13,21 @@
   * Auto-wiring into `injection_container.dart`/`app.dart` now only runs when the feature template includes a `feature_injection`-templated file (opt-in, see above).
 * Added **`reset-project` command** (modeled on Expo's `npm run reset-project`): resets `lib/` to a blank single-screen starter, optionally moving existing code to `example/` (or a custom folder via `--example-dir`) first instead of deleting it.
 * Stripped speculative "Example:" placeholder comments and commented-out Sentry/tracker/example-override snippets from every `configure` and `generate` template — generated files (base architecture and features alike) now carry at most one short "add your X here" hint instead of prescribing code you may never use. Fixed the opt-in `app_storage` template along the way: it no longer depends on a `preferences` global in `main.dart` (removed above) and now manages its own `SharedPreferences` instance.
-* Documented explicitly (README + `archify.yaml` header comments) that Archify is architecture-agnostic, not DDD-specific: `configure`/`generate` only ever walk the generic `name`/`type`/`children`/`template` tree in `structure`/`feature_template` — the shipped DDD/Clean-Architecture layout is a starting point, not a constraint. Rewriting either section to an MVVM (`model`/`view`/`viewmodel`), MVC, or any other shape works with zero code changes, since none of the built-in `template:` keys are required — untemplated files are simply created empty.
-* Migration note: automation/CI that ran `dart run archify configure` expecting an immediate full scaffold now needs `dart run archify init` followed by `dart run archify configure`, and must add the recommended packages to `pubspec.yaml` manually.
+* Documented explicitly (README + `archify.yaml`) that Archify is architecture-agnostic, not DDD-specific — the shipped DDD/Clean-Architecture layout is a starting point, not a constraint. Rewriting `structure`/`feature_template` to an MVVM (`model`/`view`/`viewmodel`), MVC, or any other shape works with zero code changes.
+* **Breaking:** Replaced `archify.yaml`'s verbose `{name, type: folder|file, children, template}` list schema with a plain nested mapping that reads like an actual file tree — nested keys are a folder, a key mapped to a template name is a file, and a blank key is an empty file (if the name has a `.`) or empty folder (if it doesn't):
+  ```yaml
+  structure:
+    lib:
+      core:
+        api:
+      shared:
+        theme:
+          app_colors.dart: theme_colors
+  ```
+  This cuts the default `archify.yaml` to roughly a third of its previous length and removes an entire category of hand-editing mistakes (forgetting `type: file`, misplacing `children:`). The same shape applies to `feature_template`.
+* Cut `archify.yaml`'s header from ~85 lines of comments to about a dozen — the exhaustive built-in template list and narrative docs moved out to a new **`templates` command** and the README, so the file itself only explains the folder/file/template rule.
+* Added **`dart run archify templates`**: lists every built-in template key (which are in the default `archify.yaml`, which are opt-in) read directly from the same registries `configure`/`generate` dispatch against, so the list can never drift out of sync with what the code actually supports.
+* Migration note: automation/CI that ran `dart run archify configure` expecting an immediate full scaffold now needs `dart run archify init` followed by `dart run archify configure`, must add the recommended packages to `pubspec.yaml` manually, and any hand-written `archify.yaml` needs converting to the new nested-mapping shape (`dart run archify init` in a fresh directory to see the new format).
 
 ## 1.0.8
 

@@ -56,7 +56,7 @@ class GenerateCommand {
   void _generateFeature(File configFile, String featureName) {
     final dynamic doc = loadYaml(configFile.readAsStringSync());
 
-    if (doc is! Map || doc['feature_template'] is! List) {
+    if (doc is! Map || doc['feature_template'] is! Map) {
       throw Exception(
         '"feature_template" section missing or invalid in archify.yaml. '
         'Delete archify.yaml and run `configure` again to regenerate the '
@@ -75,10 +75,7 @@ class GenerateCommand {
       featureRoot,
       doc['feature_template'],
       transformName: (name) => name.replaceAll('{feature_name}', featureName),
-      resolveFileContent: (path, node) {
-        final templateKey = node['template']?.toString();
-        if (templateKey == null) return null;
-
+      resolveFileContent: (path, templateKey) {
         final rendered = renderFeatureTemplate(
           templateKey,
           packageName: packageName,

@@ -1,13 +1,65 @@
+import 'package:archify/src/commands/configure/config/template_spec.dart';
 import 'package:archify/src/extensions/string_extensions.dart';
 
-/// Built-in content generators for `archify.yaml`'s `feature_template`
-/// file nodes.
+typedef FeatureTemplateBuilder =
+    String Function({
+      required String packageName,
+      required String featureName,
+      required String importRoot,
+    });
+
+/// Built-in content generators for `archify.yaml`'s `feature_template` file
+/// nodes — the single source of truth for both [renderFeatureTemplate] and
+/// `dart run archify templates`.
 ///
-/// [importRoot] is [featureRoot] (from `archify.yaml`) with a leading `lib/`
-/// stripped, e.g. `feature_root: lib/feature` → `importRoot: feature` — used
-/// to build `package:<name>/...` imports that stay correct even if the
-/// developer renames `feature_root`.
-///
+/// [importRoot] is `feature_root` (from `archify.yaml`) with a leading
+/// `lib/` stripped, e.g. `feature_root: lib/feature` → `importRoot: feature`
+/// — used to build `package:<name>/...` imports that stay correct even if
+/// the developer renames `feature_root`.
+final Map<String, TemplateSpec<FeatureTemplateBuilder>> featureTemplates = {
+  'data_source': const TemplateSpec(
+    description: 'Abstract data source interface',
+    isDefault: true,
+    build: _dataSource,
+  ),
+  'data_source_impl': const TemplateSpec(
+    description: 'Data source implementation',
+    isDefault: true,
+    build: _dataSourceImpl,
+  ),
+  'repo': const TemplateSpec(
+    description: 'Abstract repository interface',
+    isDefault: true,
+    build: _repo,
+  ),
+  'repo_impl': const TemplateSpec(
+    description: 'Repository implementation',
+    isDefault: true,
+    build: _repoImpl,
+  ),
+  'page': const TemplateSpec(
+    description: 'Blank StatelessWidget screen',
+    isDefault: true,
+    build: _page,
+  ),
+  'cubit': const TemplateSpec(
+    description: 'Bloc Cubit (needs equatable, flutter_bloc)',
+    isDefault: false,
+    build: _cubit,
+  ),
+  'cubit_state': const TemplateSpec(
+    description: 'Cubit state classes (needs equatable)',
+    isDefault: false,
+    build: _cubitState,
+  ),
+  'feature_injection': const TemplateSpec(
+    description:
+        'GetIt/Bloc wiring into injection_container.dart + app.dart (needs get_it, flutter_bloc)',
+    isDefault: false,
+    build: _featureInjection,
+  ),
+};
+
 /// An unrecognized key resolves to `null`, and the caller creates an empty
 /// file instead.
 String? renderFeatureTemplate(
@@ -16,56 +68,54 @@ String? renderFeatureTemplate(
   required String featureName,
   required String importRoot,
 }) {
-  switch (key) {
-    case 'data_source':
-      return _dataSource(featureName);
-    case 'repo':
-      return _repo(featureName);
-    case 'data_source_impl':
-      return _dataSourceImpl(packageName, featureName, importRoot);
-    case 'repo_impl':
-      return _repoImpl(packageName, featureName, importRoot);
-    case 'cubit':
-      return _cubit(packageName, featureName, importRoot);
-    case 'cubit_state':
-      return _cubitState(featureName);
-    case 'page':
-      return _page(featureName);
-    case 'feature_injection':
-      return _featureInjection(packageName, featureName, importRoot);
-    default:
-      return null;
-  }
+  final spec = featureTemplates[key];
+  if (spec == null) return null;
+  return spec.build(
+    packageName: packageName,
+    featureName: featureName,
+    importRoot: importRoot,
+  );
 }
 
-String _dataSource(String featureName) => '''
+String _dataSource({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
 abstract class ${featureName.toPascalCase()}DataSource {
   // Add your data source here
 }
 ''';
 
-String _repo(String featureName) => '''
+String _repo({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
 abstract class ${featureName.toPascalCase()}Repo {
   // Add your repo here
 }
 ''';
 
-String _dataSourceImpl(
-  String packageName,
-  String featureName,
-  String importRoot,
-) => '''
-import 'package:$packageName/$importRoot/$featureName/model/data_source/${featureName}_data_source.dart';
+String _dataSourceImpl({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+import 'package:$packageName/$importRoot/$featureName/domain/data_source/${featureName}_data_source.dart';
 
 class ${featureName.toPascalCase()}DataSourceImpl implements ${featureName.toPascalCase()}DataSource {
   // Add your data source implementation here
 }
 ''';
 
-String _repoImpl(String packageName, String featureName, String importRoot) =>
-    '''
-import 'package:$packageName/$importRoot/$featureName/model/data_source/${featureName}_data_source.dart';
-import 'package:$packageName/$importRoot/$featureName/model/repository/${featureName}_repo.dart';
+String _repoImpl({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+import 'package:$packageName/$importRoot/$featureName/domain/data_source/${featureName}_data_source.dart';
+import 'package:$packageName/$importRoot/$featureName/domain/repo/${featureName}_repo.dart';
 
 class ${featureName.toPascalCase()}RepoImpl implements ${featureName.toPascalCase()}Repo {
   ${featureName.toPascalCase()}RepoImpl({required this.remote});
@@ -75,10 +125,14 @@ class ${featureName.toPascalCase()}RepoImpl implements ${featureName.toPascalCas
 }
 ''';
 
-String _cubit(String packageName, String featureName, String importRoot) => '''
+String _cubit({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:$packageName/$importRoot/$featureName/model/repository/${featureName}_repo.dart';
+import 'package:$packageName/$importRoot/$featureName/domain/repo/${featureName}_repo.dart';
 
 part '${featureName}_state.dart';
 
@@ -94,7 +148,11 @@ class ${featureName.toPascalCase()}Cubit extends Cubit<${featureName.toPascalCas
 }
 ''';
 
-String _cubitState(String featureName) => '''
+String _cubitState({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
 part of '${featureName}_cubit.dart';
 
 abstract class ${featureName.toPascalCase()}State extends Equatable {
@@ -125,7 +183,11 @@ class ${featureName.toPascalCase()}Failure extends ${featureName.toPascalCase()}
 }
 ''';
 
-String _page(String featureName) => '''
+String _page({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
 import 'package:flutter/material.dart';
 
 class ${featureName.toPascalCase()}Screen extends StatelessWidget {
@@ -138,19 +200,19 @@ class ${featureName.toPascalCase()}Screen extends StatelessWidget {
 }
 ''';
 
-String _featureInjection(
-  String packageName,
-  String featureName,
-  String importRoot,
-) => '''
+String _featureInjection({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:$packageName/$importRoot/$featureName/model/data_source/${featureName}_data_source.dart';
-import 'package:$packageName/$importRoot/$featureName/model/data_source/${featureName}_data_source_impl.dart';
-import 'package:$packageName/$importRoot/$featureName/model/repository/${featureName}_repo.dart';
-import 'package:$packageName/$importRoot/$featureName/model/repository/${featureName}_repo_impl.dart';
-import 'package:$packageName/$importRoot/$featureName/viewmodel/${featureName}_cubit.dart';
+import 'package:$packageName/$importRoot/$featureName/data/data_source_impl/${featureName}_data_source_impl.dart';
+import 'package:$packageName/$importRoot/$featureName/data/repo_impl/${featureName}_repo_impl.dart';
+import 'package:$packageName/$importRoot/$featureName/domain/data_source/${featureName}_data_source.dart';
+import 'package:$packageName/$importRoot/$featureName/domain/repo/${featureName}_repo.dart';
+import 'package:$packageName/$importRoot/$featureName/presentation/cubit/${featureName}_cubit.dart';
 import 'package:$packageName/injection_container.dart';
 
 Future<void> init${featureName.toPascalCase()}Injection(GetIt sl) async {

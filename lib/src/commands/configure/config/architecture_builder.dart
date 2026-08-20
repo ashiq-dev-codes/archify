@@ -17,7 +17,7 @@ void buildArchitectureFromConfig(File configFile) {
     throw Exception('Failed to parse YAML: $e');
   }
 
-  if (doc is! Map || doc['structure'] is! List) {
+  if (doc is! Map || doc['structure'] is! Map) {
     throw Exception('"structure" key missing or invalid in archify.yaml');
   }
 
@@ -26,10 +26,7 @@ void buildArchitectureFromConfig(File configFile) {
   walkYamlTree(
     '',
     doc['structure'],
-    resolveFileContent: (path, node) {
-      final templateKey = node['template']?.toString();
-      if (templateKey == null) return null;
-
+    resolveFileContent: (path, templateKey) {
       final rendered = renderBaseTemplate(templateKey, packageName);
       if (rendered == null) {
         print(

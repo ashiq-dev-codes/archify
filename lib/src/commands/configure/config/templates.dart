@@ -1,55 +1,119 @@
-/// Built-in content generators for `archify.yaml` file nodes.
-///
-/// A file node with `template: <key>` gets the matching boilerplate below,
+import 'package:archify/src/commands/configure/config/template_spec.dart';
+
+typedef StructureTemplateBuilder = String Function(String packageName);
+
+/// Built-in content generators for `archify.yaml`'s `structure` file nodes —
+/// the single source of truth for both [renderBaseTemplate] and
+/// `dart run archify templates`.
+final Map<String, TemplateSpec<StructureTemplateBuilder>> structureTemplates = {
+  'main': const TemplateSpec(
+    description: 'lib/main.dart entrypoint',
+    isDefault: true,
+    build: _main,
+  ),
+  'app': const TemplateSpec(
+    description: 'lib/app.dart MaterialApp shell',
+    isDefault: true,
+    build: _app,
+  ),
+  'root': const TemplateSpec(
+    description: 'lib/root.dart App wrapper',
+    isDefault: true,
+    build: _root,
+  ),
+  'constant': const TemplateSpec(
+    description: 'Spacing/padding constants',
+    isDefault: true,
+    build: _constant,
+  ),
+  'path_images': const TemplateSpec(
+    description: 'Image asset path constants',
+    isDefault: true,
+    build: _pathImages,
+  ),
+  'path_svg': const TemplateSpec(
+    description: 'SVG asset path constants',
+    isDefault: true,
+    build: _pathSvg,
+  ),
+  'theme_colors': const TemplateSpec(
+    description: 'Color palette',
+    isDefault: true,
+    build: _themeColors,
+  ),
+  'theme_themes': const TemplateSpec(
+    description: 'Reusable theme snippets',
+    isDefault: true,
+    build: _themeThemes,
+  ),
+  'theme_main': const TemplateSpec(
+    description: 'MainTheme.mainThemeData',
+    isDefault: true,
+    build: _themeMain,
+  ),
+  'custom_snack_bar': const TemplateSpec(
+    description: 'CustomSnackBar helper',
+    isDefault: true,
+    build: _customSnackBar,
+  ),
+  'loading_dialog': const TemplateSpec(
+    description: 'LoadingDialog helper',
+    isDefault: true,
+    build: _loadingDialog,
+  ),
+  'injection_container': const TemplateSpec(
+    description: 'GetIt service locator (init/clear hooks)',
+    isDefault: false,
+    build: _injectionContainer,
+  ),
+  'app_config': const TemplateSpec(
+    description: 'Build/env + baseUrl config',
+    isDefault: false,
+    build: _appConfig,
+  ),
+  'dio_client': const TemplateSpec(
+    description: 'Dio client using AppConfig.baseUrl',
+    isDefault: false,
+    build: _dioClient,
+  ),
+  'dio_interceptor': const TemplateSpec(
+    description: 'Dio request/response/error logging',
+    isDefault: false,
+    build: _dioInterceptor,
+  ),
+  'navigation_utils': const TemplateSpec(
+    description: 'NavigatorKey + RouteObserver holder',
+    isDefault: false,
+    build: _navigationUtils,
+  ),
+  'navigation': const TemplateSpec(
+    description: 'push/pop/pushNamed navigation helpers',
+    isDefault: false,
+    build: _navigation,
+  ),
+  'route_tracker': const TemplateSpec(
+    description: 'RouteObserver tracking the current route',
+    isDefault: false,
+    build: _routeTracker,
+  ),
+  'app_storage': const TemplateSpec(
+    description: 'SharedPreferences-backed token storage',
+    isDefault: false,
+    build: _appStorage,
+  ),
+  'local_storage': const TemplateSpec(
+    description: 'SharedPreferences key constants',
+    isDefault: false,
+    build: _localStorage,
+  ),
+};
+
+/// A file node with `template: <key>` gets the matching boilerplate above,
 /// rendered with the project's package name. An unrecognized key (or no
 /// `template` key at all) resolves to `null`, and the caller creates an
 /// empty file instead.
-String? renderBaseTemplate(String key, String packageName) {
-  switch (key) {
-    case 'main':
-      return _main(packageName);
-    case 'app':
-      return _app(packageName);
-    case 'root':
-      return _root(packageName);
-    case 'injection_container':
-      return _injectionContainer();
-    case 'app_config':
-      return _appConfig();
-    case 'dio_client':
-      return _dioClient(packageName);
-    case 'constant':
-      return _constant();
-    case 'path_images':
-      return _pathImages();
-    case 'path_svg':
-      return _pathSvg();
-    case 'theme_colors':
-      return _themeColors();
-    case 'theme_themes':
-      return _themeThemes();
-    case 'theme_main':
-      return _themeMain();
-    case 'dio_interceptor':
-      return _dioInterceptor(packageName);
-    case 'navigation_utils':
-      return _navigationUtils(packageName);
-    case 'navigation':
-      return _navigation();
-    case 'route_tracker':
-      return _routeTracker();
-    case 'app_storage':
-      return _appStorage(packageName);
-    case 'local_storage':
-      return _localStorage();
-    case 'custom_snack_bar':
-      return _customSnackBar();
-    case 'loading_dialog':
-      return _loadingDialog();
-    default:
-      return null;
-  }
-}
+String? renderBaseTemplate(String key, String packageName) =>
+    structureTemplates[key]?.build(packageName);
 
 String _app(String packageName) => '''
 import 'package:flutter/material.dart';
@@ -77,7 +141,7 @@ class _AppState extends State<App> {
 }
 ''';
 
-String _injectionContainer() => '''
+String _injectionContainer(String packageName) => '''
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
@@ -150,7 +214,7 @@ Future<void> _initializeServices() async {
 }
 ''';
 
-String _appConfig() => '''
+String _appConfig(String packageName) => '''
 enum Build { e2e, testing, production }
 
 class AppConfig {
@@ -207,7 +271,7 @@ Dio get api {
 }
 ''';
 
-String _constant() => '''
+String _constant(String packageName) => '''
 import 'package:flutter/material.dart';
 
 // Constant Empty Height
@@ -293,19 +357,19 @@ const kHorizontal65 = EdgeInsets.symmetric(horizontal: 65);
 const kHorizontal70 = EdgeInsets.symmetric(horizontal: 70);
 ''';
 
-String _pathImages() => '''
+String _pathImages(String packageName) => '''
 class AppImages {
   // Add your image paths here
 }
 ''';
 
-String _pathSvg() => '''
+String _pathSvg(String packageName) => '''
 class AppSvgs {
   // Add your svg paths here
 }
 ''';
 
-String _themeColors() => '''
+String _themeColors(String packageName) => '''
 import 'package:flutter/material.dart';
 
 class AppColors {
@@ -378,13 +442,13 @@ class AppColors {
 }
 ''';
 
-String _themeThemes() => '''
+String _themeThemes(String packageName) => '''
 class AppThemes {
   // Add your app themes here
 }
 ''';
 
-String _themeMain() => '''
+String _themeMain(String packageName) => '''
 import 'package:flutter/material.dart';
 
 class MainTheme {
@@ -456,7 +520,7 @@ class NavigationUtils {
 }
 ''';
 
-String _navigation() => '''
+String _navigation(String packageName) => '''
 import 'package:flutter/material.dart';
 
 /// A utility function to navigate to a screen using a [MaterialPageRoute].
@@ -549,7 +613,7 @@ PageRouteBuilder<T> bottomSheetRoute<T>(Widget screen) {
 }
 ''';
 
-String _routeTracker() => '''
+String _routeTracker(String packageName) => '''
 import 'package:flutter/material.dart';
 
 class RouteTracker extends RouteObserver<PageRoute<dynamic>> {
@@ -600,13 +664,13 @@ class AppStorage {
 }
 ''';
 
-String _localStorage() => '''
+String _localStorage(String packageName) => '''
 class LocalStorage {
   static const token = 'token';
 }
 ''';
 
-String _customSnackBar() => '''
+String _customSnackBar(String packageName) => '''
 import 'package:flutter/material.dart';
 
 class CustomSnackBar {
@@ -649,7 +713,7 @@ class CustomSnackBar {
 }
 ''';
 
-String _loadingDialog() => '''
+String _loadingDialog(String packageName) => '''
 import 'package:flutter/material.dart';
 
 class LoadingDialog {

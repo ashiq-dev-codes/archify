@@ -3,13 +3,14 @@ import 'package:archify/src/commands/custom/custom.dart';
 import 'package:archify/src/commands/generate/generate.dart';
 import 'package:archify/src/commands/init/init.dart';
 import 'package:archify/src/commands/reset/reset.dart';
+import 'package:archify/src/commands/templates/templates.dart';
 import 'package:archify/src/utils/version_utils.dart';
 
 /// The main entry point for the Archify command-line interface (CLI).
 ///
 /// This class handles parsing of command-line arguments and executes
 /// the appropriate commands such as `init`, `configure`, `generate`,
-/// `custom`, `reset-project`, or `version`.
+/// `custom`, `templates`, `reset-project`, or `version`.
 class ArchifyCLI {
   /// Runs the Archify CLI with the provided [args].
   ///
@@ -18,6 +19,7 @@ class ArchifyCLI {
   /// - `configure`: Scaffolds the project from `archify.yaml`.
   /// - `generate`: Runs the default feature generation command.
   /// - `custom`: Runs the custom feature generation command using a template.
+  /// - `templates`: Lists every built-in `template:` key.
   /// - `reset-project`: Resets lib/ back to a blank starter app.
   /// - `version`: Prints the current version of the CLI.
   ///
@@ -60,6 +62,12 @@ class ArchifyCLI {
         CustomCommand().run(commandArgs);
         break;
 
+      case 'templates':
+
+        /// Lists every built-in template key
+        TemplatesCommand().run();
+        break;
+
       case 'reset-project':
 
         /// Resets lib/ back to a blank starter app
@@ -81,7 +89,7 @@ class ArchifyCLI {
   /// Prints CLI usage instructions
   void _printUsage() {
     print(
-      'Usage: archify <init|configure|generate|custom|reset-project|version> [options]',
+      'Usage: archify <init|configure|generate|custom|templates|reset-project|version> [options]',
     );
     print('\nCommands:');
     print(
@@ -95,6 +103,9 @@ class ArchifyCLI {
     );
     print(
       '  custom <feature>        Generate a feature using a custom template',
+    );
+    print(
+      '  templates               List every built-in template key archify.yaml can use',
     );
     print(
       '  reset-project           Reset lib/ to a blank starter app (optionally keeping old code in example/)',

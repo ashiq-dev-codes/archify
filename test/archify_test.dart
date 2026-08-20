@@ -72,6 +72,15 @@ void main() {
       expect(Directory('${tempDir.path}/lib/core').existsSync(), isTrue);
     });
 
+    test('Templates command lists built-in template keys', () {
+      final result = Process.runSync('dart', [binPath, 'templates']);
+      final output = result.stdout.toString();
+
+      expect(output, contains('main'));
+      expect(output, contains('cubit'));
+      expect(output, contains('Opt-in'));
+    });
+
     test('Reset-project command resets lib/main.dart', () {
       final tempDir = Directory.systemTemp.createTempSync('archify_test_');
       addTearDown(() => tempDir.deleteSync(recursive: true));

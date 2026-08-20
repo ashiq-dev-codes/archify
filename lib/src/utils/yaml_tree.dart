@@ -1,60 +1,55 @@
 import 'package:archify/src/utils/fs_utils.dart';
 
-/// Walks a `{name, type, children}` YAML node list — the schema shared by
-/// `archify.yaml`'s `structure` and `feature_template` sections — creating
-/// folders and files as it goes.
+/// Walks a plain nested YAML mapping — the schema `archify.yaml` uses for
+/// its `structure` and `feature_template` sections — creating folders and
+/// files as it goes.
 ///
-/// [resolveFileContent] renders a file node's content given its resolved
-/// path and the raw node map; return `null` for an empty file.
-/// [transformName] can rewrite a node's `name` before it's used (e.g.
-/// substituting the `{feature_name}` placeholder).
+/// Each key is a folder or file name; its value decides which:
+///   - a nested mapping (including `{}`)      → folder, recurse into it
+///   - a string                                → file, rendered via
+///     [resolveFileContent] using that string as the template key
+///   - blank/null, name contains a "."         → empty file
+///   - blank/null, name has no "."             → empty folder
+///   - explicit empty string `''`              → empty file, regardless of name
+///
+/// [transformName] can rewrite a key before it's used (e.g. substituting the
+/// `{feature_name}` placeholder).
 ///
 /// Throws a descriptive [Exception] on malformed input.
 void walkYamlTree(
   String basePath,
-  dynamic items, {
-  required String? Function(String path, Map node) resolveFileContent,
+  dynamic node, {
+  required String? Function(String path, String templateKey) resolveFileContent,
   String Function(String name)? transformName,
 }) {
-  if (items is! List) {
-    throw Exception('Expected a list of nodes under "$basePath"');
+  if (node is! Map) {
+    throw Exception('Expected a mapping under "$basePath"');
   }
 
-  for (final item in items) {
-    if (item is! Map ||
-        !item.containsKey('name') ||
-        !item.containsKey('type')) {
-      throw Exception(
-        'Each node must be a map with "name" and "type" under "$basePath"',
-      );
-    }
-
-    var name = item['name'].toString();
+  node.forEach((key, value) {
+    var name = key.toString();
     if (transformName != null) name = transformName(name);
-    final type = item['type'].toString();
     final path = basePath.isEmpty ? name : '$basePath/$name';
 
-    if (type == 'folder') {
+    if (value is Map) {
       createFolder(path);
-
-      final children = item['children'];
-      if (children != null) {
-        if (children is! List) {
-          throw Exception('"children" of "$name" must be a list');
-        }
-        walkYamlTree(
-          path,
-          children,
-          resolveFileContent: resolveFileContent,
-          transformName: transformName,
-        );
-      }
-    } else if (type == 'file') {
-      createFile(path, resolveFileContent(path, item) ?? '');
+      walkYamlTree(
+        path,
+        value,
+        resolveFileContent: resolveFileContent,
+        transformName: transformName,
+      );
+    } else if (value is String && value.isNotEmpty) {
+      createFile(path, resolveFileContent(path, value) ?? '');
+    } else if (value == null && !name.contains('.')) {
+      createFolder(path);
+    } else if (value == null || value is String) {
+      createFile(path, '');
     } else {
       throw Exception(
-        'Invalid type "$type" for "$name". Must be "folder" or "file".',
+        'Invalid value for "$name" — expected a nested mapping (folder), a '
+        'template name (file), or blank.',
       );
     }
-  }
+  });
 }

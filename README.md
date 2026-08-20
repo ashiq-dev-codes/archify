@@ -4,7 +4,7 @@ Archify is a CLI tool for Flutter/Dart developers to quickly scaffold projects a
 
 [![pub package](https://img.shields.io/pub/v/archify.svg)](https://pub.dev/packages/archify)
 
-> Archify ships with a DDD/Clean-Architecture-flavored default (below) to get you started, but it doesn't know or enforce any particular architecture. `configure` and `generate` just walk whatever `name`/`type`/`children`/`template` tree you put in `archify.yaml`'s `structure` and `feature_template` sections. Rewrite either one completely to follow MVVM, MVC, Redux, or anything else — swap `data`/`domain`/`presentation` for `model`/`view`/`viewmodel`, drop the built-in `template:` keys you don't need (untemplated files are just created empty), and Archify follows your architecture, not the other way around.
+> Archify ships with a DDD/Clean-Architecture-flavored default (below) to get you started, but it doesn't know or enforce any particular architecture. `archify.yaml` is just a plain nested tree — a key with nested keys is a folder, a key mapped to a template name is a file, and a blank key is an empty file/folder. `configure` and `generate` just walk whatever tree you put under `structure`/`feature_template`. Rewrite either one completely to follow MVVM, MVC, Redux, or anything else — swap `data`/`domain`/`presentation` for `model`/`view`/`viewmodel`, drop the built-in template names you don't need (untemplated files are just created empty), and Archify follows your architecture, not the other way around. Run `dart run archify templates` any time to see every built-in template name.
 
 ---
 
@@ -43,7 +43,7 @@ project/
 
 > ⚠️ This is just the **default**. `init` writes this layout into an `archify.yaml` file you can freely rename, add to, or delete nodes from before anything is generated.
 >
-> `core/config` and `shared/utils` are empty placeholder folders by default — the networking (`dio_client`/`app_config`), navigation-helper, route-tracker, local-storage, and GetIt `injection_container` boilerplate that used to ship here are now **opt-in**: add a node with the matching `template:` key back into `archify.yaml` (they're documented at the top of the generated file) if you want that pattern.
+> `core/config` and `shared/utils` are empty placeholder folders by default — the networking (`dio_client`/`app_config`), navigation-helper, route-tracker, local-storage, and GetIt `injection_container` boilerplate that used to ship here are now **opt-in**: add the matching template name back into `archify.yaml` yourself (`dart run archify templates` lists them all) if you want that pattern.
 >
 > `main.dart`, `app.dart`, and `root.dart` are plain Flutter widgets with no third-party imports — `MultiBlocProvider` (flutter_bloc), error logging (corextra), local storage init (shared_preferences), and `DevicePreview` (device_preview) are left as commented-out examples in the generated files for you to uncomment and wire up if you want them.
 
@@ -82,11 +82,14 @@ project/
   * Prompts to keep your current code (moved to `example/`, or a custom folder via `--example-dir`) or discard it.
   * Writes a fresh `lib/main.dart` with a single centered-text screen, nothing else.
 
+* **Templates Command**
+  `dart run archify templates` lists every built-in template name — which ones are in the default `archify.yaml` and which are opt-in — read straight from the same registry `configure`/`generate` use, so it never drifts out of date.
+
 * **Automatic Injection & Bloc Wiring** (opt-in)
-  Not included in the default `feature_template` — add a `template: feature_injection` file node (see the comments at the top of `archify.yaml`) to get:
+  Not included in the default `feature_template` — add a `feature_injection` file node (run `dart run archify templates` for the exact key names) to get:
 
   * A `[feature]_injection.dart` for repositories, data sources, and blocs.
-  * Automatic updates to `injection_container.dart` (add its `template: injection_container` node back to `structure` too).
+  * Automatic updates to `injection_container.dart` (add `injection_container.dart: injection_container` back to `structure` too).
   * Insertion into `app.dart`'s `MultiBlocProvider` `providers: [...]` list — you need to wrap `MaterialApp` in a `MultiBlocProvider` yourself first (see the commented example in the generated `app.dart`), since Archify only inserts into an existing list, it doesn't add the wrapper.
 
 * **Utils**
@@ -118,7 +121,7 @@ Run init now? [Y/n]:
 
 > ⚠️ Applying `archify.yaml` on an existing project may overwrite `lib/main.dart` if its content differs from what Archify would generate. Archify will prompt before overwriting (unless it looks like the default, untouched Flutter counter app) and keeps a `.bak` copy.
 
-> 📦 Archify never edits `pubspec.yaml`. After scaffolding, add whichever recommended packages you use with `flutter pub add ...` (the exact command is printed and also documented at the top of `archify.yaml`).
+> 📦 Archify never edits `pubspec.yaml`. After scaffolding, `configure` prints the exact `flutter pub add ...` command for any opt-in templates that need one.
 
 ---
 
@@ -159,27 +162,16 @@ Prefer MVVM (or anything else)? Replace `feature_template` in `archify.yaml` —
 feature_root: lib/features
 
 feature_template:
-  - name: "{feature_name}"
-    type: folder
-    children:
-      - name: model
-        type: folder
-        children:
-          - name: "{feature_name}_model.dart"
-            type: file
-      - name: view
-        type: folder
-        children:
-          - name: "{feature_name}_view.dart"
-            type: file
-      - name: viewmodel
-        type: folder
-        children:
-          - name: "{feature_name}_viewmodel.dart"
-            type: file
+  "{feature_name}":
+    model:
+      "{feature_name}_model.dart":
+    view:
+      "{feature_name}_view.dart":
+    viewmodel:
+      "{feature_name}_viewmodel.dart":
 ```
 
-`dart run archify generate profile` now produces `lib/features/profile/{model,view,viewmodel}/profile_*.dart` — empty files, since none reference a `template:` key, ready for you to fill in with your own MVVM code.
+`dart run archify generate profile` now produces `lib/features/profile/{model,view,viewmodel}/profile_*.dart` — empty files, since none of them name a built-in template, ready for you to fill in with your own MVVM code.
 
 ---
 
