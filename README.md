@@ -1,6 +1,6 @@
 # Archify CLI
 
-Archify is a CLI tool for Flutter/Dart developers to quickly scaffold projects and features following clean architecture principles. It helps maintain a consistent structure, reduces boilerplate, and now supports **fully custom project architectures**.
+Archify is a CLI tool for Flutter/Dart developers to quickly scaffold projects and features following clean architecture principles. It helps maintain a consistent structure, reduces boilerplate, and now supports **fully custom project architectures** — including the base project structure itself, driven by an `archify.yaml` file you control.
 
 [![pub package](https://img.shields.io/pub/v/archify.svg)](https://pub.dev/packages/archify)
 
@@ -30,7 +30,7 @@ project/
 │     │  └─ main_theme.dart
 │     ├─ utils/
 │     │  ├─ dio/
-│     │  │  └─ dio_intrepters.dart
+│     │  │  └─ dio_interceptors.dart
 │     │  ├─ navigation/
 │     │  │  ├─ navigation_utils.dart
 │     │  │  └─ navigation.dart
@@ -52,20 +52,20 @@ project/
 └─ README.md
 ```
 
-> ⚠️ You can still customize your project structure completely using **custom templates**.
+> ⚠️ This is just the **default**. `configure` writes this layout into an `archify.yaml` file you can freely rename, add to, or delete nodes from before anything is generated.
 
 ---
 
 ## 🔦 Features
 
 * **Configure Command**
-  Creates the base project structure under `lib/core` and `lib/shared` with common folders like:
+  Two-step, YAML-driven base project scaffolding:
 
-  * `config`
-  * `api`
-  * `model`
-  * `utils`
-  * `widgets`
+  1. `dart run archify configure` with no `archify.yaml` present writes the default config above and stops — nothing else is touched.
+  2. Edit `archify.yaml` however you want (rename folders, drop files, add your own empty ones).
+  3. Run `dart run archify configure` again to scaffold exactly what `archify.yaml` describes. Re-running it later after further edits only creates/updates what changed.
+
+  Archify **never edits `pubspec.yaml`** — it prints the packages the default templates expect (`dio`, `get_it`, `corextra`, `equatable`, `flutter_bloc`, `device_preview`, `shared_preferences`) so you can add them yourself with `flutter pub add`.
 
 * **Generate Command**
   Quickly scaffolds a new feature/module with default layers:
@@ -103,10 +103,16 @@ project/
 ### Configure project base folders
 
 ```bash
+# 1) First run: writes the default archify.yaml and stops
+dart run archify configure
+
+# 2) Customize archify.yaml however you like, then run again to scaffold
 dart run archify configure
 ```
 
-> ⚠️ Running this on an existing project may overwrite files. Archify will prompt before overwriting.
+> ⚠️ Applying `archify.yaml` on an existing project may overwrite `lib/main.dart` if its content differs from what Archify would generate. Archify will prompt before overwriting (unless it looks like the default, untouched Flutter counter app) and keeps a `.bak` copy.
+
+> 📦 Archify never edits `pubspec.yaml`. After scaffolding, add whichever recommended packages you use with `flutter pub add ...` (the exact command is printed and also documented at the top of `archify.yaml`).
 
 ---
 

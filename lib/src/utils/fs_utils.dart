@@ -8,7 +8,7 @@ String getPackageName() {
   if (!file.existsSync()) return 'your_app';
   final content = file.readAsStringSync();
   final doc = loadYaml(content);
-  return doc['name'] ?? 'your_app';
+  return doc['name']?.toString() ?? 'your_app';
 }
 
 /// Creates a folder if it doesn't exist. Optional callback after creation.

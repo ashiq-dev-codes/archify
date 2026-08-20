@@ -65,7 +65,9 @@ class ArchifyCLI {
   void _printUsage() {
     print('Usage: archify <configure|generate|custom|version> [options]');
     print('\nCommands:');
-    print('  configure               Set up base project structure');
+    print(
+      '  configure               Create/apply archify.yaml (run twice: once to generate it, again to scaffold)',
+    );
     print(
       '  generate <feature>      Generate a new feature/module (default architecture)',
     );
