@@ -83,6 +83,12 @@ project/
   * Nested folders and files
   * Optional injection or any state management structure
 
+* **Reset-Project Command**
+  Resets `lib/` back to a blank starter app — modeled directly on Expo's `npm run reset-project`:
+
+  * Prompts to keep your current code (moved to `example/`, or a custom folder via `--example-dir`) or discard it.
+  * Writes a fresh `lib/main.dart` with a single centered-text screen, nothing else.
+
 * **Automatic Injection & Bloc Wiring**
   (Only for default generate command)
 
@@ -183,6 +189,34 @@ lib/auth/services/api/auth_api.dart
 ```
 
 *Supports nested folders and files with dynamic names using `{feature_name}`.*
+
+---
+
+### Reset the project back to a blank starter
+
+```bash
+dart run archify reset-project
+
+# Or move existing code to a custom folder name instead of example/
+dart run archify reset-project --example-dir old_app
+```
+
+You'll be asked:
+
+```
+📦 Keep your current code? It will be moved to "example/" instead of deleted. [Y/n]:
+```
+
+* **Yes (default):** `lib/` is renamed to `example/` (or your `--example-dir` name) untouched, then a fresh `lib/` is created.
+* **No:** `lib/` is deleted entirely, then a fresh `lib/` is created.
+
+Either way, the new `lib/main.dart` is just:
+
+```dart
+Center(child: Text('Edit lib/main.dart to get started'))
+```
+
+`example/` (or whatever you named it) is never wired into your app — it's an inert copy of your old code for reference, exactly like Expo's `app-example/`. Delete it whenever you're done with it.
 
 ---
 

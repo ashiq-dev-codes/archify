@@ -1,12 +1,13 @@
 import 'package:archify/src/commands/configure/configure.dart';
 import 'package:archify/src/commands/custom/custom.dart';
 import 'package:archify/src/commands/generate/generate.dart';
+import 'package:archify/src/commands/reset/reset.dart';
 import 'package:archify/src/utils/version_utils.dart';
 
 /// The main entry point for the Archify command-line interface (CLI).
 ///
 /// This class handles parsing of command-line arguments and executes
-/// the appropriate commands such as `configure`, `generate`, `custom`, or `version`.
+/// the appropriate commands such as `configure`, `generate`, `custom`, `reset-project`, or `version`.
 class ArchifyCLI {
   /// Runs the Archify CLI with the provided [args].
   ///
@@ -14,6 +15,7 @@ class ArchifyCLI {
   /// - `configure`: Runs the configuration command.
   /// - `generate`: Runs the default feature generation command.
   /// - `custom`: Runs the custom feature generation command using a template.
+  /// - `reset-project`: Resets lib/ back to a blank starter app.
   /// - `version`: Prints the current version of the CLI.
   ///
   /// Example:
@@ -49,6 +51,12 @@ class ArchifyCLI {
         CustomCommand().run(commandArgs);
         break;
 
+      case 'reset-project':
+
+        /// Resets lib/ back to a blank starter app
+        ResetProjectCommand().run(commandArgs);
+        break;
+
       case 'version':
 
         /// Prints the current version of Archify CLI
@@ -63,7 +71,9 @@ class ArchifyCLI {
 
   /// Prints CLI usage instructions
   void _printUsage() {
-    print('Usage: archify <configure|generate|custom|version> [options]');
+    print(
+      'Usage: archify <configure|generate|custom|reset-project|version> [options]',
+    );
     print('\nCommands:');
     print(
       '  configure               Create/apply archify.yaml (run twice: once to generate it, again to scaffold)',
@@ -74,10 +84,14 @@ class ArchifyCLI {
     print(
       '  custom <feature>        Generate a feature using a custom template',
     );
+    print(
+      '  reset-project           Reset lib/ to a blank starter app (optionally keeping old code in example/)',
+    );
     print('  version                 Show current Archify CLI version');
     print('\nExample:');
     print(
       '  archify custom booking --template path/to/custom_template.yaml --overwrite',
     );
+    print('  archify reset-project --example-dir old_app');
   }
 }
