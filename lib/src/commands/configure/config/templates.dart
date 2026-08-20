@@ -65,22 +65,13 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
-    // Wrap this in MultiBlocProvider from flutter_bloc if you use Bloc/Cubit:
-    // return MultiBlocProvider(
-    //   providers: [
-    //     // ...authBlocs(context),
-    //   ],
-    //   child: MaterialApp(...),
-    // );
+    // Wrap in MultiBlocProvider (flutter_bloc) if you use Bloc/Cubit
     return MaterialApp(
       useInheritedMediaQuery: true,
       debugShowCheckedModeBanner: false,
       theme: MainTheme.mainThemeData(false),
 
       // Add your screen here
-      // Example:
-      // Screen
-      // home: const SplashScreen(),
     );
   }
 }
@@ -94,18 +85,11 @@ final GetIt sl = GetIt.instance;
 
 abstract class ServiceLocator {
   static Future<void> init() async {
-    // Add your injections here
-    // Example:
-    // features
-    // await initAuthInjection(sl);
-    // await initBookingInjection(sl);
+    // Add your feature injections here
   }
 
   static void clear(BuildContext context) {
-    // Add your clears here
-    // Example:
-    // clearAuth(context);
-    // clearBooking(context);
+    // Add your feature clears here
   }
 }
 ''';
@@ -128,11 +112,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Wrap this in DevicePreview from device_preview if you want it:
-    // return DevicePreview(
-    //   enabled: false,
-    //   builder: (context) => GestureDetector(...),
-    // );
+    // Wrap in DevicePreview (device_preview) if you want it
     return GestureDetector(
       onTap: () {
         FocusManager.instance.primaryFocus?.unfocus();
@@ -150,56 +130,23 @@ import 'package:flutter/material.dart';
 import 'package:$packageName/root.dart';
 
 void main() async {
-  // Use runZonedGuarded to handle errors and ensure all bindings are initialized in the same zone
   runZonedGuarded(
     () async {
-      // Ensure all bindings are properly initialized before using any plugins
       WidgetsFlutterBinding.ensureInitialized();
-      // SentryWidgetsFlutterBinding.ensureInitialized();
 
-      await _initializeServices(); // Initialize all required services
-
-      /*
-
-        await SentryFlutter.init((options) {
-        options.dsn =
-            kDebugMode
-                ? ''
-                : '';
-        // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
-        // We recommend adjusting this value in production.
-        options.tracesSampleRate = 1.0;
-        options.debug = kDebugMode;
-        options.environment = AppConfig.server.name.toString();
-      });
-
-      */
+      await _initializeServices();
 
       runApp(const AppRoot());
     },
     (error, stackTrace) async {
       // Add your error logging here
-      // Example:
-      // AppLogger.logError(error.toString()); // from package:corextra
-
-      // Handle errors by recording them with Sentry
-      // await Sentry.captureException(error, stackTrace: stackTrace);
     },
   );
 }
 
-// Initializes necessary services before running the app
+// Initializes required services before running the app
 Future<void> _initializeServices() async {
   // Add your service/DI initialization here
-  // Example:
-  // await di.ServiceLocator.init();
-
-  // Initialize Trackers
-  // await SentryTracker.init();
-
-  // Add your persistent storage initialization here
-  // Example:
-  // preferences = await SharedPreferences.getInstance(); // from package:shared_preferences
 }
 ''';
 
@@ -349,16 +296,12 @@ const kHorizontal70 = EdgeInsets.symmetric(horizontal: 70);
 String _pathImages() => '''
 class AppImages {
   // Add your image paths here
-  // Example:
-  // static const String logo = "assets/images/logo.png";
 }
 ''';
 
 String _pathSvg() => '''
 class AppSvgs {
   // Add your svg paths here
-  // Example:
-  // static const String logo = "assets/svgs/logo.svg";
 }
 ''';
 
@@ -370,9 +313,6 @@ class AppColors {
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
   // Add your base colors here
-  // Example:
-  // static const Color primary = Color(0xFF467AF9);
-  // static const Color secondary = Color(0xFF0095FF);
 
   // Accent Colors
   static const Color accent100 = Color(0xFFFCFCFD);
@@ -434,33 +374,13 @@ class AppColors {
   static const Color warning900 = Color(0xFF7A2E0E);
   static const Color warning950 = Color(0xFF4E1D09);
 
-  // Add secondary and other colors similarly...
-
   // Add your other colors here
-  // Example:
-  // static const Color gunmetalColor = Color(0xFF2C2C2C);
-  // static const Color platinumColor = Color(0xFFF5F5F5);
 }
 ''';
 
 String _themeThemes() => '''
 class AppThemes {
   // Add your app themes here
-  // Example:
-  /*
-
-    static AppBarTheme appBarTheme(bool isDarkMode) => const AppBarTheme(
-    surfaceTintColor: Colors.white,
-    iconTheme: IconThemeData(color: Colors.black),
-    backgroundColor: Colors.white,
-    titleTextStyle: TextStyle(
-      color: Colors.black,
-      fontSize: 20,
-      fontWeight: FontWeight.bold,
-    ),
-  );
-
-  */
 }
 ''';
 
@@ -468,17 +388,13 @@ String _themeMain() => '''
 import 'package:flutter/material.dart';
 
 class MainTheme {
-static ThemeData mainThemeData(bool isDarkMode) {
+  static ThemeData mainThemeData(bool isDarkMode) {
     return ThemeData(
       scaffoldBackgroundColor: Colors.white,
       splashColor: Colors.grey.withValues(alpha: 0.11),
       highlightColor: Colors.grey.withValues(alpha: 0.11),
 
       // Add your main theme here
-      // Example:
-      // fontFamily: ,
-      // primaryColor: ,
-      // appBarTheme: AppThemes.appBarTheme(isDarkMode),
     );
   }
 }
@@ -500,34 +416,22 @@ class AppInterceptor extends Interceptor {
     );
 
     if (AppConfig.token != null) {
-      // Log request token
       debugLog('Token: \${AppConfig.token!}');
     }
-
-    // Log request details to Sentry
-    // SentryTracker.recordRequest(options);
 
     super.onRequest(options, handler);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) async {
-    // Log Response Data
     AppLogger.logResponse(response);
-
-    // Log response details to Sentry
-    // SentryTracker.recordResponse(response);
 
     super.onResponse(response, handler);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    // Log the error using a custom logger
     AppLogger.logDioError(err);
-
-    // Reports the error to Sentry
-    // Sentry.captureException(err);
 
     super.onError(err, handler);
   }
@@ -565,13 +469,9 @@ Future<T?> push<T>(
   bool Function(Route<dynamic> route)? predicate,
 }) {
   final navigator = Navigator.of(context);
-  // final screenName = RouteNames.getRouteNameForScreen(screen);
   final route =
       customRoute ??
-      MaterialPageRoute(
-        builder: (context) => screen,
-        // settings: RouteSettings(name: screenName),
-      );
+      MaterialPageRoute(builder: (context) => screen);
 
   if (removeUntil) {
     return navigator.pushAndRemoveUntil(route, predicate ?? (route) => false);
@@ -677,25 +577,26 @@ class RouteTracker extends RouteObserver<PageRoute<dynamic>> {
 
 String _appStorage(String packageName) => '''
 import 'package:corextra/corextra.dart';
-import 'package:$packageName/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:$packageName/shared/utils/storage/local_storage.dart';
 
 class AppStorage {
-  static Future<bool> get clearStorage async => await preferences.clear();
+  static Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
 
-  /*  Start - Auth Token Storage Management */
+  static Future<bool> get clearStorage async => (await _prefs).clear();
+
+  // Auth token storage
   static Future<bool> setToken(String? value) async {
     return !isStringEmpty(value)
-        ? await preferences.setString(LocalStorage.token, value ?? '')
+        ? (await _prefs).setString(LocalStorage.token, value ?? '')
         : removeToken;
   }
 
-  static String? get getToken => preferences.getString(LocalStorage.token);
+  static Future<String?> get getToken async =>
+      (await _prefs).getString(LocalStorage.token);
 
   static Future<bool> get removeToken async =>
-      await preferences.remove(LocalStorage.token);
-
-  /*  End - Auth Token Storage Management */
+      (await _prefs).remove(LocalStorage.token);
 }
 ''';
 

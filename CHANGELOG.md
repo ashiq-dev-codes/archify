@@ -11,6 +11,7 @@
   * If `archify.yaml` doesn't exist yet, `generate` asks whether to run `init` first; answering yes creates the default config and continues straight into generation with it.
   * Auto-wiring into `injection_container.dart`/`app.dart` now only runs when the feature template includes a `feature_injection`-templated file (opt-in, see above).
 * Added **`reset-project` command** (modeled on Expo's `npm run reset-project`): resets `lib/` to a blank single-screen starter, optionally moving existing code to `example/` (or a custom folder via `--example-dir`) first instead of deleting it.
+* Stripped speculative "Example:" placeholder comments and commented-out Sentry/tracker snippets from every default template — generated files now carry at most one short "add your X here" hint instead of prescribing code you may never use. Fixed the opt-in `app_storage` template along the way: it no longer depends on a `preferences` global in `main.dart` (removed above) and now manages its own `SharedPreferences` instance.
 * Migration note: automation/CI that ran `dart run archify configure` expecting an immediate full scaffold now needs `dart run archify init` followed by `dart run archify configure`, and must add the recommended packages to `pubspec.yaml` manually.
 
 ## 1.0.8
