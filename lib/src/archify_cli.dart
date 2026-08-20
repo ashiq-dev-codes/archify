@@ -1,18 +1,21 @@
 import 'package:archify/src/commands/configure/configure.dart';
 import 'package:archify/src/commands/custom/custom.dart';
 import 'package:archify/src/commands/generate/generate.dart';
+import 'package:archify/src/commands/init/init.dart';
 import 'package:archify/src/commands/reset/reset.dart';
 import 'package:archify/src/utils/version_utils.dart';
 
 /// The main entry point for the Archify command-line interface (CLI).
 ///
 /// This class handles parsing of command-line arguments and executes
-/// the appropriate commands such as `configure`, `generate`, `custom`, `reset-project`, or `version`.
+/// the appropriate commands such as `init`, `configure`, `generate`,
+/// `custom`, `reset-project`, or `version`.
 class ArchifyCLI {
   /// Runs the Archify CLI with the provided [args].
   ///
   /// Supported commands:
-  /// - `configure`: Runs the configuration command.
+  /// - `init`: Creates `archify.yaml` describing the project architecture.
+  /// - `configure`: Scaffolds the project from `archify.yaml`.
   /// - `generate`: Runs the default feature generation command.
   /// - `custom`: Runs the custom feature generation command using a template.
   /// - `reset-project`: Resets lib/ back to a blank starter app.
@@ -33,9 +36,15 @@ class ArchifyCLI {
     final commandArgs = args.sublist(1); // rest of arguments
 
     switch (command) {
+      case 'init':
+
+        /// Creates archify.yaml
+        InitCommand().run();
+        break;
+
       case 'configure':
 
-        /// Executes the configure command
+        /// Scaffolds the project from archify.yaml
         ConfigureCommand().run();
         break;
 
@@ -72,11 +81,14 @@ class ArchifyCLI {
   /// Prints CLI usage instructions
   void _printUsage() {
     print(
-      'Usage: archify <configure|generate|custom|reset-project|version> [options]',
+      'Usage: archify <init|configure|generate|custom|reset-project|version> [options]',
     );
     print('\nCommands:');
     print(
-      '  configure               Create/apply archify.yaml (run twice: once to generate it, again to scaffold)',
+      '  init                    Create archify.yaml describing your project architecture',
+    );
+    print(
+      '  configure               Scaffold the project from archify.yaml (creates it first if missing)',
     );
     print(
       '  generate <feature>      Generate a new feature/module (default architecture)',

@@ -52,18 +52,17 @@ project/
 └─ README.md
 ```
 
-> ⚠️ This is just the **default**. `configure` writes this layout into an `archify.yaml` file you can freely rename, add to, or delete nodes from before anything is generated.
+> ⚠️ This is just the **default**. `init` writes this layout into an `archify.yaml` file you can freely rename, add to, or delete nodes from before anything is generated.
 
 ---
 
 ## 🔦 Features
 
-* **Configure Command**
-  Two-step, YAML-driven base project scaffolding:
+* **Init Command**
+  `dart run archify init` writes the default `archify.yaml` above and stops — nothing else is touched. If it already exists, it just reports that and points you at `configure`. Edit `archify.yaml` however you want (rename folders, drop files, add your own empty ones) before scaffolding anything.
 
-  1. `dart run archify configure` with no `archify.yaml` present writes the default config above and stops — nothing else is touched.
-  2. Edit `archify.yaml` however you want (rename folders, drop files, add your own empty ones).
-  3. Run `dart run archify configure` again to scaffold exactly what `archify.yaml` describes. Re-running it later after further edits only creates/updates what changed.
+* **Configure Command**
+  `dart run archify configure` reads `archify.yaml` and scaffolds exactly what it describes. Re-running it later after further edits only creates/updates what changed. If `archify.yaml` doesn't exist yet, it asks whether to run `init` first (which creates it) before continuing — no need to run two separate commands.
 
   Archify **never edits `pubspec.yaml`** — it prints the packages the default templates expect (`dio`, `get_it`, `corextra`, `equatable`, `flutter_bloc`, `device_preview`, `shared_preferences`) so you can add them yourself with `flutter pub add`.
 
@@ -75,7 +74,7 @@ project/
   * `presentation`
   * `[feature]_injection.dart` (for Bloc wiring)
 
-  If `archify.yaml` doesn't exist yet, `generate` asks whether to run `configure` first (which creates it) before continuing with generation — no need to run two separate commands.
+  If `archify.yaml` doesn't exist yet, `generate` asks whether to run `init` first (which creates it) before continuing with generation — no need to run two separate commands.
 
 * **Custom Command**
   Generate **fully custom features** using a YAML template. Supports:
@@ -111,11 +110,18 @@ project/
 ### Configure project base folders
 
 ```bash
-# 1) First run: writes the default archify.yaml and stops
-dart run archify configure
+# 1) Create archify.yaml
+dart run archify init
 
-# 2) Customize archify.yaml however you like, then run again to scaffold
+# 2) Customize archify.yaml however you like, then scaffold from it
 dart run archify configure
+```
+
+Skip straight to `configure` if you want — with no `archify.yaml` present it asks whether to run `init` for you first, then continues scaffolding in the same run:
+
+```
+❌ No archify.yaml found. Run `dart run archify init` first to create it.
+Run init now? [Y/n]:
 ```
 
 > ⚠️ Applying `archify.yaml` on an existing project may overwrite `lib/main.dart` if its content differs from what Archify would generate. Archify will prompt before overwriting (unless it looks like the default, untouched Flutter counter app) and keeps a `.bak` copy.
@@ -133,11 +139,11 @@ dart run archify generate auth
 If `archify.yaml` doesn't exist yet:
 
 ```
-❌ No archify.yaml found. Run `dart run archify configure` first to create it.
-Run configure now? [Y/n]:
+❌ No archify.yaml found. Run `dart run archify init` first to create it.
+Run init now? [Y/n]:
 ```
 
-Answering yes creates the default `archify.yaml` and immediately continues generating the feature from it — you don't need to run `configure` separately first.
+Answering yes creates the default `archify.yaml` and immediately continues generating the feature from it — you don't need to run `init` separately first.
 
 `generate` reads the `feature_root` and `feature_template` keys from `archify.yaml`, so you can customize what a generated feature looks like exactly like you customize the base architecture (rename folders, drop layers, add your own empty files, point `feature_root` somewhere other than `lib/feature`). With the default template, `dart run archify generate auth` produces:
 

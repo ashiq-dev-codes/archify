@@ -39,15 +39,37 @@ void main() {
       expect(result.stdout.toString(), contains('generated successfully'));
     });
 
-    test('Configure command runs', () {
+    test('Init command creates archify.yaml only', () {
       final tempDir = Directory.systemTemp.createTempSync('archify_test_');
       addTearDown(() => tempDir.deleteSync(recursive: true));
 
       final result = Process.runSync('dart', [
         binPath,
+        'init',
+      ], workingDirectory: tempDir.path);
+
+      expect(result.stdout.toString(), contains('Created archify.yaml'));
+      expect(File('${tempDir.path}/archify.yaml').existsSync(), isTrue);
+      expect(Directory('${tempDir.path}/lib').existsSync(), isFalse);
+    });
+
+    test('Configure command scaffolds the project', () {
+      final tempDir = Directory.systemTemp.createTempSync('archify_test_');
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+
+      // No archify.yaml present, so this also exercises configure's
+      // "run init now?" prompt (defaults to yes on the EOF stdin below).
+      final result = Process.runSync('dart', [
+        binPath,
         'configure',
       ], workingDirectory: tempDir.path);
-      expect(result.stdout.toString(), contains('archify.yaml'));
+
+      expect(
+        result.stdout.toString(),
+        contains('Project configured successfully'),
+      );
+      expect(File('${tempDir.path}/lib/main.dart').existsSync(), isTrue);
+      expect(Directory('${tempDir.path}/lib/core').existsSync(), isTrue);
     });
 
     test('Reset-project command resets lib/main.dart', () {

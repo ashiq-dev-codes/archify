@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:archify/src/commands/configure/configure.dart';
 import 'package:archify/src/commands/generate/feature_templates.dart';
 import 'package:archify/src/commands/generate/injection_wiring.dart';
+import 'package:archify/src/commands/init/init.dart';
 import 'package:archify/src/utils/fs_utils.dart';
 import 'package:archify/src/utils/yaml_tree.dart';
 import 'package:yaml/yaml.dart';
@@ -13,8 +13,8 @@ class GenerateCommand {
   /// Runs the generate command with the provided [args].
   ///
   /// The first argument in [args] should be the feature name. If
-  /// `archify.yaml` doesn't exist yet, prompts to run `configure` first
-  /// (which creates it) before continuing with generation.
+  /// `archify.yaml` doesn't exist yet, prompts to run `init` first (which
+  /// creates it) before continuing with generation.
   void run(List<String> args) {
     if (args.isEmpty) {
       print('❌ Please provide a feature name');
@@ -26,19 +26,19 @@ class GenerateCommand {
 
     if (!configFile.existsSync()) {
       print(
-        '❌ No archify.yaml found. Run `dart run archify configure` first to create it.',
+        '❌ No archify.yaml found. Run `dart run archify init` first to create it.',
       );
 
-      final proceed = _askForConfirmation('Run configure now? [Y/n]: ');
+      final proceed = _askForConfirmation('Run init now? [Y/n]: ');
       if (!proceed) {
         print('❌ Generation cancelled.');
         return;
       }
 
-      ConfigureCommand().run();
+      InitCommand().run();
 
       if (!configFile.existsSync()) {
-        print('❌ archify.yaml still not found after running configure.');
+        print('❌ archify.yaml still not found after running init.');
         return;
       }
     }

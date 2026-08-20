@@ -1,20 +1,20 @@
 import 'dart:io';
 
 import 'package:archify/src/commands/configure/config/architecture_builder.dart';
-import 'package:archify/src/commands/configure/config/default_config.dart';
 import 'package:archify/src/commands/configure/config/recommended_packages.dart';
 import 'package:archify/src/commands/configure/config/templates.dart';
 import 'package:archify/src/commands/configure/readme/readme.dart';
+import 'package:archify/src/commands/init/init.dart';
 import 'package:archify/src/utils/fs_utils.dart';
 
 /// Thrown internally when the user declines to overwrite existing code.
 class _ConfigureCancelled implements Exception {}
 
-/// Configures a Flutter project from `archify.yaml`.
+/// Scaffolds the project from `archify.yaml`'s `structure` section.
 ///
-/// The first run (no `archify.yaml` present) only writes the default config
-/// file. Every run after that reads `archify.yaml` and scaffolds the
-/// folders/files it describes. Archify never edits `pubspec.yaml`.
+/// If `archify.yaml` doesn't exist yet, prompts to run `init` first (which
+/// creates it) before continuing with configure. Archify never edits
+/// `pubspec.yaml`.
 class ConfigureCommand {
   /// Runs the configure command.
   ///
@@ -23,12 +23,22 @@ class ConfigureCommand {
     final configFile = File('archify.yaml');
 
     if (!configFile.existsSync()) {
-      configFile.writeAsStringSync(defaultArchifyConfig);
-      print('📄 Created archify.yaml');
       print(
-        '   Customize it, then run `dart run archify configure` again to scaffold your project.',
+        '❌ No archify.yaml found. Run `dart run archify init` first to create it.',
       );
-      return;
+
+      final proceed = _askYesNoDefaultYes('Run init now? [Y/n]: ');
+      if (!proceed) {
+        print('❌ Configure cancelled.');
+        return;
+      }
+
+      InitCommand().run();
+
+      if (!configFile.existsSync()) {
+        print('❌ archify.yaml still not found after running init.');
+        return;
+      }
     }
 
     try {
@@ -64,7 +74,7 @@ class ConfigureCommand {
 
     final isFresh = _isFreshProject(mainFile);
     if (!isFresh && !force) {
-      final proceed = _askForConfirmation(
+      final proceed = _askOverwriteConfirmation(
         '⚠️ Existing code detected in lib/main.dart.\n'
         'Running "configure" may overwrite your code.\n'
         'Do you want to continue?',
@@ -85,11 +95,20 @@ class ConfigureCommand {
     return content.contains('MyHomePage') && content.contains('Counter');
   }
 
-  /// Prompts user for confirmation
-  bool _askForConfirmation(String message) {
+  /// Prompts for confirmation before overwriting existing code, defaulting
+  /// to "no" on empty input — this one is destructive, so it stays opt-in.
+  bool _askOverwriteConfirmation(String message) {
     stdout.write('$message [y/N]: ');
     final input = stdin.readLineSync()?.trim().toLowerCase();
     return input == 'y';
+  }
+
+  /// Prompts for confirmation, defaulting to "yes" on empty input — used for
+  /// low-risk, easily-reversible steps like running `init`.
+  bool _askYesNoDefaultYes(String message) {
+    stdout.write(message);
+    final input = stdin.readLineSync()?.trim().toLowerCase() ?? '';
+    return input != 'n' && input != 'no';
   }
 
   /// Creates a backup of a file
