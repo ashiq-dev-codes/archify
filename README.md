@@ -1,8 +1,10 @@
 # Archify CLI
 
-Archify is a CLI tool for Flutter/Dart developers to quickly scaffold projects and features following clean architecture principles. It helps maintain a consistent structure, reduces boilerplate, and now supports **fully custom project architectures** — including the base project structure itself, driven by an `archify.yaml` file you control.
+Archify is a CLI tool for Flutter/Dart developers to quickly scaffold projects and features. It helps maintain a consistent structure, reduces boilerplate, and is **architecture-agnostic** — the base project structure and every generated feature are driven entirely by an `archify.yaml` file you control.
 
 [![pub package](https://img.shields.io/pub/v/archify.svg)](https://pub.dev/packages/archify)
+
+> Archify ships with a DDD/Clean-Architecture-flavored default (below) to get you started, but it doesn't know or enforce any particular architecture. `configure` and `generate` just walk whatever `name`/`type`/`children`/`template` tree you put in `archify.yaml`'s `structure` and `feature_template` sections. Rewrite either one completely to follow MVVM, MVC, Redux, or anything else — swap `data`/`domain`/`presentation` for `model`/`view`/`viewmodel`, drop the built-in `template:` keys you don't need (untemplated files are just created empty), and Archify follows your architecture, not the other way around.
 
 ---
 
@@ -150,6 +152,34 @@ lib/feature/auth/
 │  ├─ page/
 │  └─ widget/
 ```
+
+Prefer MVVM (or anything else)? Replace `feature_template` in `archify.yaml` — no code changes, no flags:
+
+```yaml
+feature_root: lib/features
+
+feature_template:
+  - name: "{feature_name}"
+    type: folder
+    children:
+      - name: model
+        type: folder
+        children:
+          - name: "{feature_name}_model.dart"
+            type: file
+      - name: view
+        type: folder
+        children:
+          - name: "{feature_name}_view.dart"
+            type: file
+      - name: viewmodel
+        type: folder
+        children:
+          - name: "{feature_name}_viewmodel.dart"
+            type: file
+```
+
+`dart run archify generate profile` now produces `lib/features/profile/{model,view,viewmodel}/profile_*.dart` — empty files, since none reference a `template:` key, ready for you to fill in with your own MVVM code.
 
 ---
 

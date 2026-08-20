@@ -7,8 +7,17 @@ String get defaultArchifyConfig => '''
 # Archify project architecture
 # ─────────────────────────────────────────────────────────────────────────
 # This file defines the folder/file structure that `dart run archify configure`
-# scaffolds into your project. It ships with Archify's default clean
-# architecture layout below — customize it however you like:
+# scaffolds into your project. It ships with a DDD/Clean-Architecture-flavored
+# default below (core/feature/shared, data/domain/presentation per feature) —
+# but that's just a starting point, not a requirement. Archify doesn't know
+# or care what architecture you use: it only reads `name`/`type`/`children`/
+# `template` nodes and creates whatever tree you describe. Rewrite `structure`
+# and `feature_template` completely to follow MVVM, MVC, Redux, or anything
+# else — e.g. swap `data`/`domain`/`presentation` for `model`/`view`/
+# `viewmodel` folders, and either drop the `template:` keys (files are
+# created empty for you to fill in) or keep only the ones that still make
+# sense for your layout. Otherwise, customize the shipped default however you
+# like:
 #   • rename, add, or remove folders and files
 #   • delete anything you don't need
 #   • add plain files/folders with no "template" key — they're created empty
