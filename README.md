@@ -42,6 +42,8 @@ project/
 > ⚠️ This is just the **default**. `init` writes this layout into an `archify.yaml` file you can freely rename, add to, or delete nodes from before anything is generated.
 >
 > `core/config` and `shared/utils` are empty placeholder folders by default — the networking (`dio_client`/`app_config`), navigation-helper, route-tracker, local-storage, and GetIt `injection_container` boilerplate that used to ship here are now **opt-in**: add a node with the matching `template:` key back into `archify.yaml` (they're documented at the top of the generated file) if you want that pattern.
+>
+> `main.dart`, `app.dart`, and `root.dart` are plain Flutter widgets with no third-party imports — `MultiBlocProvider` (flutter_bloc), error logging (corextra), local storage init (shared_preferences), and `DevicePreview` (device_preview) are left as commented-out examples in the generated files for you to uncomment and wire up if you want them.
 
 ---
 
@@ -53,15 +55,14 @@ project/
 * **Configure Command**
   `dart run archify configure` reads `archify.yaml` and scaffolds exactly what it describes. Re-running it later after further edits only creates/updates what changed. If `archify.yaml` doesn't exist yet, it asks whether to run `init` first (which creates it) before continuing — no need to run two separate commands.
 
-  Archify **never edits `pubspec.yaml`** — it prints the packages the default templates expect (`dio`, `get_it`, `corextra`, `equatable`, `flutter_bloc`, `device_preview`, `shared_preferences`) so you can add them yourself with `flutter pub add`.
+  Archify **never edits `pubspec.yaml`**, and the default `structure` needs nothing beyond the Flutter SDK — `main.dart`/`app.dart`/`root.dart` only reach for third-party packages (error logging, local storage, device preview) inside commented-out examples you opt into yourself. `generate`'s default Cubit pattern does need `equatable`/`flutter_bloc`, which `configure` prints a `flutter pub add` reminder for.
 
 * **Generate Command**
   Driven entirely by `archify.yaml`'s `feature_root`/`feature_template` keys — customize what a generated feature looks like the same way you customize the base architecture. The default template scaffolds:
 
   * `data`
   * `domain`
-  * `presentation`
-  * `[feature]_injection.dart` (for Bloc wiring)
+  * `presentation` (Cubit/state via `flutter_bloc`/`equatable`)
 
   If `archify.yaml` doesn't exist yet, `generate` asks whether to run `init` first (which creates it) before continuing with generation — no need to run two separate commands.
 
@@ -84,7 +85,7 @@ project/
 
   * A `[feature]_injection.dart` for repositories, data sources, and blocs.
   * Automatic updates to `injection_container.dart` (add its `template: injection_container` node back to `structure` too).
-  * Updates to `app.dart`'s `MultiBlocProvider` with the new feature's blocs.
+  * Insertion into `app.dart`'s `MultiBlocProvider` `providers: [...]` list — you need to wrap `MaterialApp` in a `MultiBlocProvider` yourself first (see the commented example in the generated `app.dart`), since Archify only inserts into an existing list, it doesn't add the wrapper.
 
 * **Utils**
 

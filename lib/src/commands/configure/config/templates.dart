@@ -53,7 +53,6 @@ String? renderBaseTemplate(String key, String packageName) {
 
 String _app(String packageName) => '''
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:$packageName/shared/theme/main_theme.dart';
 
 class App extends StatefulWidget {
@@ -66,23 +65,22 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        // Add your blocs here
-        // Example:
-        // ...authBlocs(context),
-        // ...bookingBlocs(context),
-      ],
-      child: MaterialApp(
-        useInheritedMediaQuery: true,
-        debugShowCheckedModeBanner: false,
-        theme: MainTheme.mainThemeData(false),
+    // Wrap this in MultiBlocProvider from flutter_bloc if you use Bloc/Cubit:
+    // return MultiBlocProvider(
+    //   providers: [
+    //     // ...authBlocs(context),
+    //   ],
+    //   child: MaterialApp(...),
+    // );
+    return MaterialApp(
+      useInheritedMediaQuery: true,
+      debugShowCheckedModeBanner: false,
+      theme: MainTheme.mainThemeData(false),
 
-        // Add your screen here
-        // Example:
-        // Screen
-        // home: const SplashScreen(),
-      ),
+      // Add your screen here
+      // Example:
+      // Screen
+      // home: const SplashScreen(),
     );
   }
 }
@@ -113,7 +111,6 @@ abstract class ServiceLocator {
 ''';
 
 String _root(String packageName) => '''
-import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:$packageName/app.dart';
 
@@ -131,16 +128,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DevicePreview(
-      enabled: false,
-      builder: (context) {
-        return GestureDetector(
-          onTap: () {
-            FocusManager.instance.primaryFocus?.unfocus();
-          },
-          child: App(),
-        );
+    // Wrap this in DevicePreview from device_preview if you want it:
+    // return DevicePreview(
+    //   enabled: false,
+    //   builder: (context) => GestureDetector(...),
+    // );
+    return GestureDetector(
+      onTap: () {
+        FocusManager.instance.primaryFocus?.unfocus();
       },
+      child: App(),
     );
   }
 }
@@ -149,13 +146,8 @@ class MyApp extends StatelessWidget {
 String _main(String packageName) => '''
 import 'dart:async';
 
-import 'package:corextra/corextra.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:$packageName/root.dart';
-
-// Late initializations
-late SharedPreferences preferences;
 
 void main() async {
   // Use runZonedGuarded to handle errors and ensure all bindings are initialized in the same zone
@@ -186,8 +178,9 @@ void main() async {
       runApp(const AppRoot());
     },
     (error, stackTrace) async {
-      // Log the error using a custom logger
-      AppLogger.logError(error.toString());
+      // Add your error logging here
+      // Example:
+      // AppLogger.logError(error.toString()); // from package:corextra
 
       // Handle errors by recording them with Sentry
       // await Sentry.captureException(error, stackTrace: stackTrace);
@@ -204,8 +197,9 @@ Future<void> _initializeServices() async {
   // Initialize Trackers
   // await SentryTracker.init();
 
-  // Obtain an instance of SharedPreferences for persistent storage
-  preferences = await SharedPreferences.getInstance();
+  // Add your persistent storage initialization here
+  // Example:
+  // preferences = await SharedPreferences.getInstance(); // from package:shared_preferences
 }
 ''';
 

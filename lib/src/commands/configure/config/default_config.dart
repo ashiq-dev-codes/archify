@@ -36,8 +36,12 @@ String get defaultArchifyConfig => '''
 # name, e.g. `core/config/dio.dart` → `dio_client`) if you want GetIt/Dio/
 # navigation-helper/local-storage boilerplate back.
 #
-# ⚠️ Archify never edits pubspec.yaml. This default architecture expects the
-# following packages — add whichever you actually use yourself:
+# ⚠️ Archify never edits pubspec.yaml. The "structure" default below needs
+# nothing beyond the Flutter SDK — main.dart/app.dart/root.dart only reach
+# for third-party packages inside commented-out examples (error logging via
+# corextra, local storage via shared_preferences, device_preview) that you
+# uncomment and add yourself. `dart run archify generate` does need packages
+# for its default Cubit pattern:
 #   flutter pub add ${recommendedPackages.join(' ')}
 #
 # ⚠️ Built-in templates hardcode import paths that match the layout below
@@ -65,10 +69,12 @@ String get defaultArchifyConfig => '''
 # GetIt/Bloc auto-wiring counterpart to the `injection_container` key above.
 # When present, Archify also wires the generated feature into
 # `injection_container.dart` and `app.dart`'s MultiBlocProvider automatically.
-# Add a `"{feature_name}_injection.dart"` file node with
-# `template: feature_injection` here, AND a node with
-# `template: injection_container` back in "structure", if you want that
-# wiring — the two go together.
+# To use it: add a `"{feature_name}_injection.dart"` file node with
+# `template: feature_injection` here, a node with `template: injection_container`
+# back in "structure", AND wrap `app.dart`'s MaterialApp in a MultiBlocProvider
+# yourself (see the commented example left in the generated `app.dart`) —
+# Archify only inserts into an existing `providers: [...]` list, it doesn't
+# add the wrapper.
 # ─────────────────────────────────────────────────────────────────────────
 
 version: 1
