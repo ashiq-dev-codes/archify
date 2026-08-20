@@ -8,6 +8,10 @@
 * **Behavior change:** Archify no longer touches `pubspec.yaml` at all — it used to auto-inject `dio`, `get_it`, `corextra`, `equatable`, `flutter_bloc`, `device_preview`, and `shared_preferences`, and to strip comments while doing so. It now only prints the `flutter pub add ...` command for you to run yourself.
 * Migration note: automation/CI that ran `dart run archify configure` expecting an immediate full scaffold now needs a second invocation (after `archify.yaml` is created), and must add the recommended packages manually.
 * Removed the now-unused `yaml_edit` dependency.
+* **Behavior change:** `generate <feature>` is now driven by `archify.yaml`'s `feature_root`/`feature_template` keys instead of a hardcoded data/domain/presentation layout — customize what a generated feature looks like the same way you customize the base architecture, including renaming `feature_root` away from `lib/feature`.
+  * If `archify.yaml` doesn't exist yet, `generate` asks whether to run `configure` first; answering yes creates the default config and continues straight into generation with it.
+  * Auto-wiring into `injection_container.dart`/`app.dart` now only runs when the feature template includes a `feature_injection`-templated file (the default does).
+* Added **`reset-project` command** (modeled on Expo's `npm run reset-project`): resets `lib/` to a blank single-screen starter, optionally moving existing code to `example/` (or a custom folder via `--example-dir`) first instead of deleting it.
 
 ## 1.0.8
 

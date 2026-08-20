@@ -23,7 +23,7 @@ String get defaultArchifyConfig => '''
 #     template: <key>         # optional, fills the file with Archify's default
 #                              # boilerplate for that key. Omit it for an empty file.
 #
-# Built-in template keys:
+# Built-in "structure" template keys:
 #   main, app, root, injection_container, app_config, dio_client, constant,
 #   path_images, path_svg, theme_colors, theme_themes, theme_main,
 #   dio_interceptor, navigation_utils, navigation, route_tracker,
@@ -41,6 +41,23 @@ String get defaultArchifyConfig => '''
 # Run `dart run archify configure` again any time after editing this file to
 # (re)scaffold the project — existing files are left untouched unless their
 # content differs from the template.
+# ─────────────────────────────────────────────────────────────────────────
+#
+# `dart run archify generate <name>` is driven by the two keys below instead:
+#
+#   feature_root: <folder>       # where generated features are placed
+#   feature_template: [...]      # same {name, type, children, template} nodes
+#                                 # as "structure", plus a `{feature_name}`
+#                                 # placeholder you can use in any node's name
+#
+# Built-in "feature_template" template keys:
+#   data_source, repo, data_source_impl, repo_impl, cubit, cubit_state, page,
+#   feature_injection
+#
+# `feature_injection` is special: when present, Archify also wires the
+# generated feature into `injection_container.dart` and `app.dart`'s
+# MultiBlocProvider automatically. Remove that node (and adjust the rest) if
+# you're not using GetIt/Bloc for a feature.
 # ─────────────────────────────────────────────────────────────────────────
 
 version: 1
@@ -164,4 +181,67 @@ structure:
       - name: root.dart
         type: file
         template: root
+
+feature_root: lib/feature
+
+feature_template:
+  - name: "{feature_name}"
+    type: folder
+    children:
+      - name: data
+        type: folder
+        children:
+          - name: data_source_impl
+            type: folder
+            children:
+              - name: "{feature_name}_data_source_impl.dart"
+                type: file
+                template: data_source_impl
+          - name: repo_impl
+            type: folder
+            children:
+              - name: "{feature_name}_repo_impl.dart"
+                type: file
+                template: repo_impl
+
+      - name: domain
+        type: folder
+        children:
+          - name: data_source
+            type: folder
+            children:
+              - name: "{feature_name}_data_source.dart"
+                type: file
+                template: data_source
+          - name: repo
+            type: folder
+            children:
+              - name: "{feature_name}_repo.dart"
+                type: file
+                template: repo
+
+      - name: presentation
+        type: folder
+        children:
+          - name: cubit
+            type: folder
+            children:
+              - name: "{feature_name}_cubit.dart"
+                type: file
+                template: cubit
+              - name: "{feature_name}_state.dart"
+                type: file
+                template: cubit_state
+          - name: page
+            type: folder
+            children:
+              - name: "{feature_name}_page.dart"
+                type: file
+                template: page
+          - name: widget
+            type: folder
+
+      - name: "{feature_name}_injection.dart"
+        type: file
+        template: feature_injection
 ''';

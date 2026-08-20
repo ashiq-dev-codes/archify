@@ -68,12 +68,14 @@ project/
   Archify **never edits `pubspec.yaml`** — it prints the packages the default templates expect (`dio`, `get_it`, `corextra`, `equatable`, `flutter_bloc`, `device_preview`, `shared_preferences`) so you can add them yourself with `flutter pub add`.
 
 * **Generate Command**
-  Quickly scaffolds a new feature/module with default layers:
+  Driven entirely by `archify.yaml`'s `feature_root`/`feature_template` keys — customize what a generated feature looks like the same way you customize the base architecture. The default template scaffolds:
 
   * `data`
   * `domain`
   * `presentation`
   * `[feature]_injection.dart` (for Bloc wiring)
+
+  If `archify.yaml` doesn't exist yet, `generate` asks whether to run `configure` first (which creates it) before continuing with generation — no need to run two separate commands.
 
 * **Custom Command**
   Generate **fully custom features** using a YAML template. Supports:
@@ -128,7 +130,16 @@ dart run archify configure
 dart run archify generate auth
 ```
 
-Example output:
+If `archify.yaml` doesn't exist yet:
+
+```
+❌ No archify.yaml found. Run `dart run archify configure` first to create it.
+Run configure now? [Y/n]:
+```
+
+Answering yes creates the default `archify.yaml` and immediately continues generating the feature from it — you don't need to run `configure` separately first.
+
+`generate` reads the `feature_root` and `feature_template` keys from `archify.yaml`, so you can customize what a generated feature looks like exactly like you customize the base architecture (rename folders, drop layers, add your own empty files, point `feature_root` somewhere other than `lib/feature`). With the default template, `dart run archify generate auth` produces:
 
 ```
 lib/feature/auth/
