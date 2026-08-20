@@ -118,10 +118,14 @@ class ConfigureCommand {
     print('📦 Backup created: $backupPath');
   }
 
-  /// Reminds the developer to add the packages the default templates expect.
+  /// Reminds the developer that the default templates need no packages, and
+  /// what to add if they opt into the Cubit/Bloc pattern later.
   void _printPackageReminder() {
     print(
-      '📦 Archify never edits pubspec.yaml — add these packages yourself if you use the default templates:',
+      '📦 Archify never edits pubspec.yaml. The default templates need nothing beyond the Flutter SDK.',
+    );
+    print(
+      '   Opting into the Cubit/Bloc templates (cubit, cubit_state, feature_injection)? Run:',
     );
     print('   flutter pub add ${recommendedPackages.join(' ')}');
   }

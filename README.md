@@ -55,14 +55,14 @@ project/
 * **Configure Command**
   `dart run archify configure` reads `archify.yaml` and scaffolds exactly what it describes. Re-running it later after further edits only creates/updates what changed. If `archify.yaml` doesn't exist yet, it asks whether to run `init` first (which creates it) before continuing — no need to run two separate commands.
 
-  Archify **never edits `pubspec.yaml`**, and the default `structure` needs nothing beyond the Flutter SDK — `main.dart`/`app.dart`/`root.dart` only reach for third-party packages (error logging, local storage, device preview) inside commented-out examples you opt into yourself. `generate`'s default Cubit pattern does need `equatable`/`flutter_bloc`, which `configure` prints a `flutter pub add` reminder for.
+  Archify **never edits `pubspec.yaml`**, and neither default needs anything beyond the Flutter SDK — `main.dart`/`app.dart`/`root.dart` only reach for third-party packages (error logging, local storage, device preview) inside commented-out examples you opt into yourself. `configure` prints a reminder for the one opt-in exception: the Cubit/Bloc templates (`equatable`/`flutter_bloc`), if you add them back.
 
 * **Generate Command**
   Driven entirely by `archify.yaml`'s `feature_root`/`feature_template` keys — customize what a generated feature looks like the same way you customize the base architecture. The default template scaffolds:
 
   * `data`
   * `domain`
-  * `presentation` (Cubit/state via `flutter_bloc`/`equatable`)
+  * `presentation` — just a `page` (Flutter SDK only) and an empty `cubit`/`widget` folder; add your own Cubit/state files or a different state-management approach
 
   If `archify.yaml` doesn't exist yet, `generate` asks whether to run `init` first (which creates it) before continuing with generation — no need to run two separate commands.
 

@@ -36,12 +36,13 @@ String get defaultArchifyConfig => '''
 # name, e.g. `core/config/dio.dart` → `dio_client`) if you want GetIt/Dio/
 # navigation-helper/local-storage boilerplate back.
 #
-# ⚠️ Archify never edits pubspec.yaml. The "structure" default below needs
-# nothing beyond the Flutter SDK — main.dart/app.dart/root.dart only reach
-# for third-party packages inside commented-out examples (error logging via
-# corextra, local storage via shared_preferences, device_preview) that you
-# uncomment and add yourself. `dart run archify generate` does need packages
-# for its default Cubit pattern:
+# ⚠️ Archify never edits pubspec.yaml. Neither default below (this file's
+# "structure", nor "feature_template" further down) needs any package beyond
+# the Flutter SDK — main.dart/app.dart/root.dart only reach for third-party
+# packages inside commented-out examples (error logging via corextra, local
+# storage via shared_preferences, device_preview) that you uncomment and add
+# yourself. If you add the opt-in `cubit`/`cubit_state` templates back to
+# "feature_template" (see below), you'll need:
 #   flutter pub add ${recommendedPackages.join(' ')}
 #
 # ⚠️ Built-in templates hardcode import paths that match the layout below
@@ -201,13 +202,6 @@ feature_template:
         children:
           - name: cubit
             type: folder
-            children:
-              - name: "{feature_name}_cubit.dart"
-                type: file
-                template: cubit
-              - name: "{feature_name}_state.dart"
-                type: file
-                template: cubit_state
           - name: page
             type: folder
             children:

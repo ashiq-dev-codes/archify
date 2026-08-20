@@ -41,16 +41,12 @@ String? renderFeatureTemplate(
 String _dataSource(String featureName) => '''
 abstract class ${featureName.toPascalCase()}DataSource {
   // Add your data source here
-  // Example:
-  // Future<bool> login();
 }
 ''';
 
 String _repo(String featureName) => '''
 abstract class ${featureName.toPascalCase()}Repo {
   // Add your repo here
-  // Example:
-  // Future<bool> sendOTP();
 }
 ''';
 
@@ -61,25 +57,8 @@ String _dataSourceImpl(
 ) => '''
 import 'package:$packageName/$importRoot/$featureName/domain/data_source/${featureName}_data_source.dart';
 
-    // Add your apis here
-    // Example:
-    // const String loginApi = 'login';
-
-class ${featureName.toPascalCase()}DataSourceImpl implements ${featureName.toPascalCase()}DataSource{
-    // Add your data source implements here
-    // Example:
-    /*
-      @override
-      Future<bool> login() async {
-        try {
-          Response response = await api.post(url: loginApi);
-
-          return (response.statusCode ?? 0) ~/ 100 == 2;
-        } catch (e) {
-          rethrow;
-        }
-      }
-    */
+class ${featureName.toPascalCase()}DataSourceImpl implements ${featureName.toPascalCase()}DataSource {
+  // Add your data source implementation here
 }
 ''';
 
@@ -92,18 +71,7 @@ class ${featureName.toPascalCase()}RepoImpl implements ${featureName.toPascalCas
   ${featureName.toPascalCase()}RepoImpl({required this.remote});
   final ${featureName.toPascalCase()}DataSource remote;
 
-  // Add your repo implements here
-  // Example:
-  /*
-    @override
-    Future<bool> login() async {
-      try {
-        return await remote.login();
-      } catch (e) {
-        rethrow;
-      }
-    }
-  */
+  // Add your repo implementation here
 }
 ''';
 
@@ -123,12 +91,6 @@ class ${featureName.toPascalCase()}Cubit extends Cubit<${featureName.toPascalCas
   }
 
   // Add your bloc functions here
-  // Example:
-  /*
-  Future<bool> login() async {
-    return await repo.login();
-  }
-  */
 }
 ''';
 
@@ -191,7 +153,6 @@ import 'package:$packageName/$importRoot/$featureName/domain/repo/${featureName}
 import 'package:$packageName/$importRoot/$featureName/presentation/cubit/${featureName}_cubit.dart';
 import 'package:$packageName/injection_container.dart';
 
-
 Future<void> init${featureName.toPascalCase()}Injection(GetIt sl) async {
   //* Blocs
   sl.registerLazySingleton(() => ${featureName.toPascalCase()}Cubit(repo: sl()));
@@ -214,5 +175,4 @@ List<BlocProvider<Cubit<Object>>> ${featureName.toCamelCase()}Blocs(
 ) => <BlocProvider<Cubit<Object>>>[
   BlocProvider<${featureName.toPascalCase()}Cubit>(create: (BuildContext context) => sl<${featureName.toPascalCase()}Cubit>()),
 ];
-
 ''';
