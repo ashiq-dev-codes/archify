@@ -17,16 +17,17 @@ const defaultArchifyConfig = '''
 # All built-in template keys: `dart run archify templates`
 # Full docs: https://pub.dev/packages/archify
 
-version: 1
+version: 1 # archify.yaml schema version — no need to touch this
 
+# Base project structure — scaffolded by `dart run archify configure`
 structure:
   lib:
-    core:
+    core: # app-wide config, api client, shared models
       api:
       config:
       model:
-    feature:
-    shared:
+    feature: # generated features live here
+    shared: # reusable theme, widgets, constants, utils
       constant:
         constant.dart: constant
       path:
@@ -46,21 +47,22 @@ structure:
     main.dart: main
     root.dart: root
 
+# Per-feature structure — scaffolded by `dart run archify generate <name>`
 feature_root: lib/feature
 
 feature_template:
   "{feature_name}":
-    data:
+    data: # repo/data-source implementations
       data_source_impl:
         "{feature_name}_data_source_impl.dart": data_source_impl
       repo_impl:
         "{feature_name}_repo_impl.dart": repo_impl
-    domain:
+    domain: # repo/data-source interfaces
       data_source:
         "{feature_name}_data_source.dart": data_source
       repo:
         "{feature_name}_repo.dart": repo
-    presentation:
+    presentation: # screens, widgets, state
       cubit:
       page:
         "{feature_name}_page.dart": page
