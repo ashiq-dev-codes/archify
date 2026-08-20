@@ -55,7 +55,7 @@ String _dataSourceImpl(
   String featureName,
   String importRoot,
 ) => '''
-import 'package:$packageName/$importRoot/$featureName/domain/data_source/${featureName}_data_source.dart';
+import 'package:$packageName/$importRoot/$featureName/model/data_source/${featureName}_data_source.dart';
 
 class ${featureName.toPascalCase()}DataSourceImpl implements ${featureName.toPascalCase()}DataSource {
   // Add your data source implementation here
@@ -64,8 +64,8 @@ class ${featureName.toPascalCase()}DataSourceImpl implements ${featureName.toPas
 
 String _repoImpl(String packageName, String featureName, String importRoot) =>
     '''
-import 'package:$packageName/$importRoot/$featureName/domain/data_source/${featureName}_data_source.dart';
-import 'package:$packageName/$importRoot/$featureName/domain/repo/${featureName}_repo.dart';
+import 'package:$packageName/$importRoot/$featureName/model/data_source/${featureName}_data_source.dart';
+import 'package:$packageName/$importRoot/$featureName/model/repository/${featureName}_repo.dart';
 
 class ${featureName.toPascalCase()}RepoImpl implements ${featureName.toPascalCase()}Repo {
   ${featureName.toPascalCase()}RepoImpl({required this.remote});
@@ -78,7 +78,7 @@ class ${featureName.toPascalCase()}RepoImpl implements ${featureName.toPascalCas
 String _cubit(String packageName, String featureName, String importRoot) => '''
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:$packageName/$importRoot/$featureName/domain/repo/${featureName}_repo.dart';
+import 'package:$packageName/$importRoot/$featureName/model/repository/${featureName}_repo.dart';
 
 part '${featureName}_state.dart';
 
@@ -146,11 +146,11 @@ String _featureInjection(
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:$packageName/$importRoot/$featureName/data/data_source_impl/${featureName}_data_source_impl.dart';
-import 'package:$packageName/$importRoot/$featureName/data/repo_impl/${featureName}_repo_impl.dart';
-import 'package:$packageName/$importRoot/$featureName/domain/data_source/${featureName}_data_source.dart';
-import 'package:$packageName/$importRoot/$featureName/domain/repo/${featureName}_repo.dart';
-import 'package:$packageName/$importRoot/$featureName/presentation/cubit/${featureName}_cubit.dart';
+import 'package:$packageName/$importRoot/$featureName/model/data_source/${featureName}_data_source.dart';
+import 'package:$packageName/$importRoot/$featureName/model/data_source/${featureName}_data_source_impl.dart';
+import 'package:$packageName/$importRoot/$featureName/model/repository/${featureName}_repo.dart';
+import 'package:$packageName/$importRoot/$featureName/model/repository/${featureName}_repo_impl.dart';
+import 'package:$packageName/$importRoot/$featureName/viewmodel/${featureName}_cubit.dart';
 import 'package:$packageName/injection_container.dart';
 
 Future<void> init${featureName.toPascalCase()}Injection(GetIt sl) async {
