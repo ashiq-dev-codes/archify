@@ -14,8 +14,6 @@ project/
 │  └─ core/
 │     ├─ api/
 │     ├─ config/
-│     │  ├─ config.dart
-│     │  └─ dio.dart
 │     ├─ model/
 │  └─ feature/
 │  └─ shared/
@@ -29,23 +27,12 @@ project/
 │     │  ├─ app_themes.dart
 │     │  └─ main_theme.dart
 │     ├─ utils/
-│     │  ├─ dio/
-│     │  │  └─ dio_interceptors.dart
-│     │  ├─ navigation/
-│     │  │  ├─ navigation_utils.dart
-│     │  │  └─ navigation.dart
-│     │  ├─ route/
-│     │  │  └─ route_tracker.dart
-│     │  └─ storage/
-│     │     ├─ app_storage.dart
-│     │     └─ local_storage.dart
 │     ├─ widget/
 │     │  ├─ global/
 │     │  │  └─ custom_snack_bar.dart
 │     │  └─ loading/
 │     │     └─ loading_dialog.dart
 │  └─ app.dart
-│  └─ injection_container.dart
 │  └─ main.dart
 │  └─ root.dart
 ├─ pubspec.yaml
@@ -53,6 +40,8 @@ project/
 ```
 
 > ⚠️ This is just the **default**. `init` writes this layout into an `archify.yaml` file you can freely rename, add to, or delete nodes from before anything is generated.
+>
+> `core/config` and `shared/utils` are empty placeholder folders by default — the networking (`dio_client`/`app_config`), navigation-helper, route-tracker, local-storage, and GetIt `injection_container` boilerplate that used to ship here are now **opt-in**: add a node with the matching `template:` key back into `archify.yaml` (they're documented at the top of the generated file) if you want that pattern.
 
 ---
 
@@ -90,12 +79,12 @@ project/
   * Prompts to keep your current code (moved to `example/`, or a custom folder via `--example-dir`) or discard it.
   * Writes a fresh `lib/main.dart` with a single centered-text screen, nothing else.
 
-* **Automatic Injection & Bloc Wiring**
-  (Only for default generate command)
+* **Automatic Injection & Bloc Wiring** (opt-in)
+  Not included in the default `feature_template` — add a `template: feature_injection` file node (see the comments at the top of `archify.yaml`) to get:
 
-  * Creates `[feature]_injection.dart` for repositories, data sources, and blocs.
-  * Automatically updates `injection_container.dart`.
-  * Updates `app.dart` `MultiBlocProvider` with new feature blocs.
+  * A `[feature]_injection.dart` for repositories, data sources, and blocs.
+  * Automatic updates to `injection_container.dart` (add its `template: injection_container` node back to `structure` too).
+  * Updates to `app.dart`'s `MultiBlocProvider` with the new feature's blocs.
 
 * **Utils**
 
@@ -159,7 +148,6 @@ lib/feature/auth/
 │  ├─ cubit/
 │  ├─ page/
 │  └─ widget/
-└─ auth_injection.dart
 ```
 
 ---

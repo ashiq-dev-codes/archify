@@ -55,7 +55,6 @@ String _app(String packageName) => '''
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:$packageName/shared/theme/main_theme.dart';
-import 'package:$packageName/shared/utils/navigation/navigation_utils.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -78,8 +77,6 @@ class _AppState extends State<App> {
         useInheritedMediaQuery: true,
         debugShowCheckedModeBanner: false,
         theme: MainTheme.mainThemeData(false),
-        navigatorKey: NavigationUtils.navigatorKey,
-        navigatorObservers: [NavigationUtils.routeObserver],
 
         // Add your screen here
         // Example:
@@ -157,8 +154,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:$packageName/root.dart';
 
-import '/injection_container.dart' as di;
-
 // Late initializations
 late SharedPreferences preferences;
 
@@ -202,7 +197,9 @@ void main() async {
 
 // Initializes necessary services before running the app
 Future<void> _initializeServices() async {
-  await di.ServiceLocator.init();
+  // Add your service/DI initialization here
+  // Example:
+  // await di.ServiceLocator.init();
 
   // Initialize Trackers
   // await SentryTracker.init();

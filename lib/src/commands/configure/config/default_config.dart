@@ -29,6 +29,13 @@ String get defaultArchifyConfig => '''
 #   dio_interceptor, navigation_utils, navigation, route_tracker,
 #   app_storage, local_storage, custom_snack_bar, loading_dialog
 #
+# Not every key above is used in the default tree below — injection_container,
+# app_config, dio_client, dio_interceptor, navigation_utils, navigation,
+# route_tracker, app_storage, and local_storage are opt-in. Add a node with
+# one of those `template:` keys yourself (matching folder path shown by its
+# name, e.g. `core/config/dio.dart` → `dio_client`) if you want GetIt/Dio/
+# navigation-helper/local-storage boilerplate back.
+#
 # ⚠️ Archify never edits pubspec.yaml. This default architecture expects the
 # following packages — add whichever you actually use yourself:
 #   flutter pub add ${recommendedPackages.join(' ')}
@@ -54,10 +61,14 @@ String get defaultArchifyConfig => '''
 #   data_source, repo, data_source_impl, repo_impl, cubit, cubit_state, page,
 #   feature_injection
 #
-# `feature_injection` is special: when present, Archify also wires the
-# generated feature into `injection_container.dart` and `app.dart`'s
-# MultiBlocProvider automatically. Remove that node (and adjust the rest) if
-# you're not using GetIt/Bloc for a feature.
+# `feature_injection` isn't used in the default tree below either — it's the
+# GetIt/Bloc auto-wiring counterpart to the `injection_container` key above.
+# When present, Archify also wires the generated feature into
+# `injection_container.dart` and `app.dart`'s MultiBlocProvider automatically.
+# Add a `"{feature_name}_injection.dart"` file node with
+# `template: feature_injection` here, AND a node with
+# `template: injection_container` back in "structure", if you want that
+# wiring — the two go together.
 # ─────────────────────────────────────────────────────────────────────────
 
 version: 1
@@ -73,13 +84,6 @@ structure:
             type: folder
           - name: config
             type: folder
-            children:
-              - name: config.dart
-                type: file
-                template: app_config
-              - name: dio.dart
-                type: file
-                template: dio_client
           - name: model
             type: folder
 
@@ -121,37 +125,6 @@ structure:
 
           - name: utils
             type: folder
-            children:
-              - name: dio
-                type: folder
-                children:
-                  - name: dio_interceptors.dart
-                    type: file
-                    template: dio_interceptor
-              - name: navigation
-                type: folder
-                children:
-                  - name: navigation_utils.dart
-                    type: file
-                    template: navigation_utils
-                  - name: navigation.dart
-                    type: file
-                    template: navigation
-              - name: route
-                type: folder
-                children:
-                  - name: route_tracker.dart
-                    type: file
-                    template: route_tracker
-              - name: storage
-                type: folder
-                children:
-                  - name: app_storage.dart
-                    type: file
-                    template: app_storage
-                  - name: local_storage.dart
-                    type: file
-                    template: local_storage
 
           - name: widget
             type: folder
@@ -172,9 +145,6 @@ structure:
       - name: app.dart
         type: file
         template: app
-      - name: injection_container.dart
-        type: file
-        template: injection_container
       - name: main.dart
         type: file
         template: main
@@ -240,8 +210,4 @@ feature_template:
                 template: page
           - name: widget
             type: folder
-
-      - name: "{feature_name}_injection.dart"
-        type: file
-        template: feature_injection
 ''';
