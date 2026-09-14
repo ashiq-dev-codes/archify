@@ -131,7 +131,6 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     // Wrap in MultiBlocProvider (flutter_bloc) if you use Bloc/Cubit
     return MaterialApp(
-      useInheritedMediaQuery: true,
       debugShowCheckedModeBanner: false,
       theme: MainTheme.mainThemeData(false),
 
