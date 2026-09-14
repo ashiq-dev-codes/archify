@@ -122,6 +122,52 @@ void main() {
       );
     });
 
+    test(
+      'Generate produces repository/service/controller/screen for a Feature-First project',
+      () {
+        final tempDir = Directory.systemTemp.createTempSync('archify_test_');
+        addTearDown(() => tempDir.deleteSync(recursive: true));
+
+        Process.runSync('dart', [
+          binPath,
+          'init',
+          '--arch',
+          'feature-first',
+        ], workingDirectory: tempDir.path);
+        final result = Process.runSync('dart', [
+          binPath,
+          'generate',
+          'auth',
+        ], workingDirectory: tempDir.path);
+
+        expect(result.stdout.toString(), contains('generated successfully'));
+        expect(
+          File(
+            '${tempDir.path}/lib/feature/auth/data/auth_repository.dart',
+          ).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(
+            '${tempDir.path}/lib/feature/auth/application/auth_service.dart',
+          ).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(
+            '${tempDir.path}/lib/feature/auth/presentation/controllers/auth_controller.dart',
+          ).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(
+            '${tempDir.path}/lib/feature/auth/presentation/views/auth_screen.dart',
+          ).existsSync(),
+          isTrue,
+        );
+      },
+    );
+
     test('Configure command scaffolds the project', () {
       final tempDir = Directory.systemTemp.createTempSync('archify_test_');
       addTearDown(() => tempDir.deleteSync(recursive: true));

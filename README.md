@@ -15,7 +15,7 @@ dart run archify configure   # 2. scaffolds the project from it
 dart run archify generate auth   # 3. generate a feature/module
 ```
 
-`init` prompts for an architecture (Enter keeps the default, DDD) — or skip the prompt with `dart run archify init --arch mvvm`. `dart run archify init --arch` with no value, or any unrecognized name, prints the available keys.
+`init` prompts for an architecture (Enter keeps the default, DDD) — or skip the prompt with `dart run archify init --arch mvvm` (also: `ddd`, `feature-first`). `dart run archify init --arch` with no value, or any unrecognized name, prints the available keys.
 
 If you skip straight to `configure` or `generate` with no `archify.yaml` present, they'll ask to run `init` for you first and then continue — you don't have to run the three commands in strict separate steps.
 
@@ -38,9 +38,15 @@ structure:
 
 `structure` is scaffolded by `configure`; `feature_root` + `feature_template` (the same shape, plus a `{feature_name}` placeholder) are scaffolded by `generate`. Run `dart run archify templates` any time to see every built-in template name and whether it's in the default `archify.yaml` or opt-in.
 
-Archify ships two full architecture presets you pick between at `init` time — **DDD/Clean Architecture** (the default) and **MVVM**, both scaffolded with real, properly-layered starter content, not empty files or a flattened shortcut. Both share dependency-free `core/error` (a `Failure`/`Result<T>` hierarchy — no `dartz`/`fpdart` needed) and `core/network` (connectivity via a plain `dart:io` DNS lookup, no package needed) infrastructure. `dart run archify generate profile` under the MVVM preset produces `lib/feature/profile/{model,repository,viewmodel,view}/profile_*.dart` — the view model depends on a repository rather than owning I/O itself, and the view is a `StatefulWidget` already wired to it via `ListenableBuilder`, all without a state-management package.
+Archify ships three full architecture presets you pick between at `init` time, each scaffolded with real, properly-layered starter content — not empty files or a flattened shortcut:
 
-For anything beyond those two — MVC, or your own house style — rewrite `structure`/`feature_template` yourself; it works with **zero code changes**:
+* **DDD / Clean Architecture** (`ddd`, the default) — `entities`/`usecases`/`repositories` in domain, `datasources`/`models`/`repositories` in data. The strictest of the three: one repository interface, one use case class per action, presentation depends only on use cases.
+* **MVVM** (`mvvm`) — `model`/`repository`/`viewmodel`/`view` per feature. The view model depends on a repository (not raw I/O), and the view is a `StatefulWidget` already wired to it via `ListenableBuilder`.
+* **Feature-First** (`feature-first`) — flatter than DDD: one concrete repository (no interface/impl split), a plain model, and an `application/` service layer that holds business logic independent of any single screen — several controllers can share one service, unlike MVVM's view model.
+
+All three share dependency-free `core/error` (a `Failure`/`Result<T>` hierarchy — no `dartz`/`fpdart` needed) and `core/network` (connectivity via a plain `dart:io` DNS lookup, no package needed) infrastructure; DDD also gets `core/usecase`'s base contract. Run `dart run archify templates` to see exactly which template keys back each one.
+
+For anything beyond those three — MVC, or your own house style — rewrite `structure`/`feature_template` yourself; it works with **zero code changes**:
 
 ```yaml
 feature_root: lib/features
@@ -133,7 +139,7 @@ Opt into `cubit` + `feature_injection` (see below) and the Cubit depends on the 
 
 | Command | What it does |
 |---|---|
-| `init [--arch <ddd\|mvvm>]` | Creates `archify.yaml` from the chosen architecture preset (prompts if `--arch` is omitted). No-ops (with a message) if `archify.yaml` already exists. |
+| `init [--arch <ddd\|mvvm\|feature-first>]` | Creates `archify.yaml` from the chosen architecture preset (prompts if `--arch` is omitted). No-ops (with a message) if `archify.yaml` already exists. |
 | `configure` | Scaffolds the project from `archify.yaml`. Safe to re-run — creates/updates what changed **and backs up what you removed** (see [below](#editing-archifyyaml-after-the-fact)). Prompts before overwriting `lib/main.dart` if it looks like real code (not the default counter app), and keeps a `.bak` copy. |
 | `generate <feature>` | Scaffolds a feature from `archify.yaml`'s `feature_template`. Re-running it for an existing feature reconciles it the same way `configure` does. |
 | `custom <feature> --template <file.yaml>` | Scaffolds a feature from a one-off YAML template instead of `archify.yaml` — see [below](#generate-a-fully-custom-feature). |

@@ -1,4 +1,5 @@
 import 'package:archify/src/commands/init/config/ddd_architecture.dart';
+import 'package:archify/src/commands/init/config/feature_first_architecture.dart';
 import 'package:archify/src/commands/init/config/mvvm_architecture.dart';
 
 /// One architecture `dart run archify init` can scaffold `archify.yaml`
@@ -39,5 +40,11 @@ final Map<String, ArchitecturePreset> architecturePresets = {
     label: 'MVVM',
     description: 'model/view/viewmodel per feature, ChangeNotifier-based state',
     archifyYaml: mvvmArchifyConfig,
+  ),
+  'feature-first': const ArchitecturePreset(
+    label: 'Feature-First',
+    description:
+        'flatter than DDD — one repository, a service layer shared across screens',
+    archifyYaml: featureFirstArchifyConfig,
   ),
 };

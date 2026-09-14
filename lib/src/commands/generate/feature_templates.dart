@@ -58,12 +58,13 @@ final Map<String, TemplateSpec<FeatureTemplateBuilder>> featureTemplates = {
     build: _page,
   ),
   'model': const TemplateSpec(
-    description: 'Plain data model (MVVM)',
+    description: 'Plain data model (MVVM, Feature-First)',
     isDefault: false,
     build: _model,
   ),
   'repository': const TemplateSpec(
-    description: 'Repository using NetworkInfo (MVVM)',
+    description:
+        'Repository using NetworkInfo, no interface (MVVM, Feature-First)',
     isDefault: false,
     build: _mvvmRepository,
   ),
@@ -77,6 +78,24 @@ final Map<String, TemplateSpec<FeatureTemplateBuilder>> featureTemplates = {
     description: 'StatefulWidget view wired to its ViewModel (MVVM)',
     isDefault: false,
     build: _view,
+  ),
+  'service': const TemplateSpec(
+    description:
+        'Business logic composing the repository, shared across screens (Feature-First)',
+    isDefault: false,
+    build: _service,
+  ),
+  'controller': const TemplateSpec(
+    description:
+        'ChangeNotifier controller wired to its service (Feature-First, no package needed)',
+    isDefault: false,
+    build: _controller,
+  ),
+  'screen': const TemplateSpec(
+    description:
+        'StatefulWidget screen wired to its Controller (Feature-First)',
+    isDefault: false,
+    build: _screen,
   ),
   'cubit': const TemplateSpec(
     description:
@@ -327,7 +346,7 @@ class ${featureName.toPascalCase()}Repository {
 
   // Add your data access here (API calls, local storage, ...), returning
   // Result<${featureName.toPascalCase()}Model> (see core/error/failures.dart
-  // and ../model/${featureName}_model.dart) so the view model can handle
+  // and this feature's ${featureName}_model.dart) so callers can handle
   // failure without try/catch
 }
 ''';
@@ -389,6 +408,91 @@ class _${featureName.toPascalCase()}ViewState extends State<${featureName.toPasc
     return Scaffold(
       body: ListenableBuilder(
         listenable: _viewModel,
+        builder: (context, _) => Placeholder(),
+      ),
+    );
+  }
+}
+''';
+
+String _service({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+import 'package:$packageName/$importRoot/$featureName/data/${featureName}_repository.dart';
+
+class ${featureName.toPascalCase()}Service {
+  const ${featureName.toPascalCase()}Service(this.repository);
+
+  final ${featureName.toPascalCase()}Repository repository;
+
+  // Add your business logic here — one method per capability this feature
+  // exposes, returning Result<T> (see core/error/failures.dart) so callers
+  // can handle failure without try/catch. Keep this reusable across more
+  // than one Controller if this feature ends up needing that.
+}
+''';
+
+String _controller({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+import 'package:flutter/foundation.dart';
+import 'package:$packageName/$importRoot/$featureName/application/${featureName}_service.dart';
+
+class ${featureName.toPascalCase()}Controller extends ChangeNotifier {
+  ${featureName.toPascalCase()}Controller({required this.service});
+
+  final ${featureName.toPascalCase()}Service service;
+
+  bool isLoading = false;
+  Object? error;
+
+  // Add your view state (e.g. the fetched ${featureName.toPascalCase()}Model)
+  // and logic here — call the service, not the repository directly, and
+  // notifyListeners() after each change
+}
+''';
+
+String _screen({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+import 'package:flutter/material.dart';
+import 'package:$packageName/core/network/network_info.dart';
+import 'package:$packageName/$importRoot/$featureName/application/${featureName}_service.dart';
+import 'package:$packageName/$importRoot/$featureName/data/${featureName}_repository.dart';
+import 'package:$packageName/$importRoot/$featureName/presentation/controllers/${featureName}_controller.dart';
+
+class ${featureName.toPascalCase()}Screen extends StatefulWidget {
+  const ${featureName.toPascalCase()}Screen({super.key});
+
+  @override
+  State<${featureName.toPascalCase()}Screen> createState() =>
+      _${featureName.toPascalCase()}ScreenState();
+}
+
+class _${featureName.toPascalCase()}ScreenState extends State<${featureName.toPascalCase()}Screen> {
+  final _controller = ${featureName.toPascalCase()}Controller(
+    service: ${featureName.toPascalCase()}Service(
+      ${featureName.toPascalCase()}Repository(networkInfo: const NetworkInfoImpl()),
+    ),
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: ListenableBuilder(
+        listenable: _controller,
         builder: (context, _) => Placeholder(),
       ),
     );
