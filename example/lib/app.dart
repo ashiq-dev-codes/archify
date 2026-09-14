@@ -18,7 +18,6 @@ class _AppState extends State<App> {
       // Add your theme here (e.g. MainTheme.mainThemeData from
       // shared/theme/main_theme.dart, if your structure generates one)
 
-      // dart run archify generate <feature> to add more screens
       home: const AuthScreen(),
     );
   }

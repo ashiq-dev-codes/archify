@@ -38,7 +38,7 @@ structure:
 
 `structure` is scaffolded by `configure`; `feature_root` + `feature_template` (the same shape, plus a `{feature_name}` placeholder) are scaffolded by `generate`. Run `dart run archify templates` any time to see every built-in template name and whether it's in the default `archify.yaml` or opt-in.
 
-Archify ships two full architecture presets you pick between at `init` time — **DDD/Clean Architecture** (the default) and **MVVM**, both scaffolded with real starter content, not empty files. `dart run archify generate profile` under the MVVM preset produces `lib/feature/profile/{model,view,viewmodel}/profile_*.dart`, where the view is a `StatefulWidget` already wired to a `ChangeNotifier` view model via `ListenableBuilder` — no state-management package required.
+Archify ships two full architecture presets you pick between at `init` time — **DDD/Clean Architecture** (the default) and **MVVM**, both scaffolded with real, properly-layered starter content, not empty files or a flattened shortcut. Both share dependency-free `core/error` (a `Failure`/`Result<T>` hierarchy — no `dartz`/`fpdart` needed) and `core/network` (connectivity via a plain `dart:io` DNS lookup, no package needed) infrastructure. `dart run archify generate profile` under the MVVM preset produces `lib/feature/profile/{model,repository,viewmodel,view}/profile_*.dart` — the view model depends on a repository rather than owning I/O itself, and the view is a `StatefulWidget` already wired to it via `ListenableBuilder`, all without a state-management package.
 
 For anything beyond those two — MVC, or your own house style — rewrite `structure`/`feature_template` yourself; it works with **zero code changes**:
 
@@ -59,14 +59,21 @@ feature_template:
 
 ---
 
-## 📂 Default architecture
+## 📂 Default architecture (DDD)
 
 ```
 lib/
 ├─ core/
 │  ├─ api/
 │  ├─ config/
-│  └─ model/
+│  ├─ error/
+│  │  ├─ failures.dart      # Failure hierarchy + Result<T>
+│  │  └─ exceptions.dart    # thrown by data sources, mapped to a Failure
+│  ├─ network/
+│  │  └─ network_info.dart  # connectivity check, no package required
+│  ├─ usecase/
+│  │  └─ usecase.dart       # UseCase<ReturnType, Params> base contract
+│  └─ models/
 ├─ feature/
 ├─ shared/
 │  ├─ constant/
@@ -87,26 +94,38 @@ lib/
 └─ root.dart
 ```
 
-* `core/config` and `shared/utils` are empty on purpose — the networking (`dio_client`/`app_config`), navigation, route-tracking, local-storage, and DI (`injection_container`) helpers that used to live here are now **opt-in**. `dart run archify templates` lists them.
+* `core/config` and `shared/utils` are empty on purpose — the networking (`dio_client`/`app_config`), navigation, route-tracking, local-storage, and DI (`injection_container`) helpers that used to live here are now **opt-in**. `dart run archify templates` lists them. `core/error`, `core/network`, and `core/usecase` need nothing beyond the Flutter SDK, so they're in by default instead.
 * `main.dart`, `app.dart`, and `root.dart` use nothing beyond the Flutter SDK, and don't assume any other generated file exists either — theming, DI, and your first screen are left as commented-out spots in `app.dart` for you to wire up, exactly like MultiBlocProvider, error logging, local storage, and DevicePreview already were.
 * Archify **never edits `pubspec.yaml`** — after `configure`, it prints the exact `flutter pub add ...` command for whichever opt-in templates need a package.
 
-A generated feature (`dart run archify generate auth`) follows the same idea:
+A generated feature (`dart run archify generate auth`) follows the same idea, one layer deeper than a beginner `data_source`/`repo` split — the data source lives entirely in the data layer (only the repository crosses into domain, same as real Clean Architecture):
 
 ```
 lib/feature/auth/
 ├─ data/
-│  ├─ data_source_impl/
-│  └─ repo_impl/
+│  ├─ datasources/
+│  │  ├─ auth_remote_data_source.dart       # abstract
+│  │  └─ auth_remote_data_source_impl.dart
+│  ├─ models/
+│  │  └─ auth_model.dart                    # extends AuthEntity
+│  └─ repositories/
+│     └─ auth_repository_impl.dart          # data source + NetworkInfo
 ├─ domain/
-│  ├─ data_source/
-│  └─ repo/
+│  ├─ entities/
+│  │  └─ auth_entity.dart
+│  ├─ repositories/
+│  │  └─ auth_repository.dart               # abstract — the only boundary
+│  │                                        # the domain layer exposes
+│  └─ usecases/
+│     └─ auth_usecase.dart                  # composes the repository
 └─ presentation/
    ├─ cubit/    (empty — add your own state management)
    ├─ page/
    │  └─ auth_page.dart
    └─ widget/
 ```
+
+Opt into `cubit` + `feature_injection` (see below) and the Cubit depends on the use case, the use case on the repository, the repository on the data source + `NetworkInfo` — the full chain, wired by GetIt.
 
 ---
 
@@ -126,9 +145,10 @@ lib/feature/auth/
 
 Add a `feature_injection` file to `feature_template` (see `dart run archify templates`) to get:
 
-* A `[feature]_injection.dart` registering the feature's repository, data source, and Cubit with GetIt.
-* An automatic import + init call added to `injection_container.dart` — add `injection_container` back to `structure` too.
+* A `[feature]_injection.dart` registering the feature's data source, repository, use case, and Cubit with GetIt — Cubit depends on the use case, not the repository directly.
+* An automatic import + init call added to `injection_container.dart` — add `injection_container` back to `structure` too (it also registers the shared `NetworkInfo` singleton every feature's repository depends on).
 * An automatic entry in `app.dart`'s `MultiBlocProvider` `providers: [...]` list — you need to wrap `MaterialApp` in a `MultiBlocProvider` yourself first (see the commented example in generated `app.dart`); Archify only inserts into an existing list, it doesn't add the wrapper.
+* Also call `await ServiceLocator.init();` from `main.dart`'s `_initializeServices()` yourself — Archify leaves that call site commented too.
 
 ---
 

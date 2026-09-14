@@ -1,7 +1,9 @@
 /// The `archify.yaml` content written by `dart run archify init --arch ddd`
-/// (the default when no architecture is picked) — DDD/Clean-Architecture
-/// flavored: `data`/`domain`/`presentation` per feature, repo + data source
-/// pattern.
+/// (the default when no architecture is picked) — DDD/Clean Architecture:
+/// `entities`/`usecases`/`repositories` in domain, `datasources`/`models`/
+/// `repositories` in data, presentation on top. Error handling
+/// (`Failure`/`Result`) and a `NetworkInfo` check live in `core/`, shared by
+/// every feature — no third-party package required for any of it.
 const dddArchifyConfig = '''
 # archify.yaml — the project tree Archify scaffolds. It's just folders and
 # files; rewrite it into any architecture you want (DDD, MVVM, whatever) —
@@ -24,10 +26,17 @@ version: 1 # archify.yaml schema version — no need to touch this
 # Base project structure — scaffolded by `dart run archify configure`
 structure:
   lib:
-    core: # app-wide config, api client, shared models
+    core: # app-wide config, api client, error handling, shared models
       api:
       config:
-      model:
+      error:
+        failures.dart: core_failures
+        exceptions.dart: core_exceptions
+      network:
+        network_info.dart: core_network_info
+      usecase:
+        usecase.dart: core_usecase
+      models:
     feature: # generated features live here
     shared: # reusable theme, widgets, constants, utils
       constant:
@@ -54,16 +63,21 @@ feature_root: lib/feature
 
 feature_template:
   "{feature_name}":
-    data: # repo/data-source implementations
-      data_source_impl:
-        "{feature_name}_data_source_impl.dart": data_source_impl
-      repo_impl:
-        "{feature_name}_repo_impl.dart": repo_impl
-    domain: # repo/data-source interfaces
-      data_source:
-        "{feature_name}_data_source.dart": data_source
-      repo:
-        "{feature_name}_repo.dart": repo
+    data: # remote data source + repository implementations
+      datasources:
+        "{feature_name}_remote_data_source.dart": data_source
+        "{feature_name}_remote_data_source_impl.dart": data_source_impl
+      models:
+        "{feature_name}_model.dart": data_model
+      repositories:
+        "{feature_name}_repository_impl.dart": repo_impl
+    domain: # the only layer presentation depends on
+      entities:
+        "{feature_name}_entity.dart": entity
+      repositories:
+        "{feature_name}_repository.dart": repo
+      usecases:
+        "{feature_name}_usecase.dart": usecase
     presentation: # screens, widgets, state
       cubit:
       page:

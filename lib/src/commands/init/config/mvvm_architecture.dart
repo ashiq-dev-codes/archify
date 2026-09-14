@@ -1,6 +1,9 @@
 /// The `archify.yaml` content written by `dart run archify init --arch mvvm`
-/// — MVVM flavored: `model`/`viewmodel`/`view` per feature, a plain
-/// `ChangeNotifier` view model with no state-management package required.
+/// — MVVM: `model`/`repository`/`viewmodel`/`view` per feature. The view
+/// model depends on a repository instead of owning I/O itself, and the
+/// repository checks connectivity via the same dependency-free
+/// `core/network/network_info.dart` the DDD preset uses — no
+/// state-management or networking package required.
 const mvvmArchifyConfig = '''
 # archify.yaml — the project tree Archify scaffolds. It's just folders and
 # files; rewrite it into any architecture you want (DDD, MVVM, whatever) —
@@ -23,10 +26,15 @@ version: 1 # archify.yaml schema version — no need to touch this
 # Base project structure — scaffolded by `dart run archify configure`
 structure:
   lib:
-    core: # app-wide config, api client, shared models
+    core: # app-wide config, api client, error handling, shared models
       api:
       config:
-      model:
+      error:
+        failures.dart: core_failures
+        exceptions.dart: core_exceptions
+      network:
+        network_info.dart: core_network_info
+      models:
     feature: # generated features live here
     shared: # reusable theme, widgets, constants, utils
       constant:
@@ -55,6 +63,8 @@ feature_template:
   "{feature_name}":
     model: # plain data for this feature
       "{feature_name}_model.dart": model
+    repository: # data access, checked against core/network's NetworkInfo
+      "{feature_name}_repository.dart": repository
     viewmodel: # ChangeNotifier holding view state + logic
       "{feature_name}_viewmodel.dart": viewmodel
     view: # the screen, wired to its view model via ListenableBuilder

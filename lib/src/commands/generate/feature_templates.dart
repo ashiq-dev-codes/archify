@@ -17,25 +17,40 @@ typedef FeatureTemplateBuilder =
 /// — used to build `package:<name>/...` imports that stay correct even if
 /// the developer renames `feature_root`.
 final Map<String, TemplateSpec<FeatureTemplateBuilder>> featureTemplates = {
+  'entity': const TemplateSpec(
+    description: 'Domain entity (DDD)',
+    isDefault: true,
+    build: _entity,
+  ),
+  'data_model': const TemplateSpec(
+    description: 'Data-layer model extending the entity (DDD)',
+    isDefault: true,
+    build: _dataModel,
+  ),
   'data_source': const TemplateSpec(
-    description: 'Abstract data source interface',
+    description: 'Abstract remote data source interface (DDD)',
     isDefault: true,
     build: _dataSource,
   ),
   'data_source_impl': const TemplateSpec(
-    description: 'Data source implementation',
+    description: 'Remote data source implementation (DDD)',
     isDefault: true,
     build: _dataSourceImpl,
   ),
   'repo': const TemplateSpec(
-    description: 'Abstract repository interface',
+    description: 'Abstract repository interface (DDD)',
     isDefault: true,
     build: _repo,
   ),
   'repo_impl': const TemplateSpec(
-    description: 'Repository implementation',
+    description: 'Repository implementation — data source + NetworkInfo (DDD)',
     isDefault: true,
     build: _repoImpl,
+  ),
+  'usecase': const TemplateSpec(
+    description: 'Use case composing the repository (DDD)',
+    isDefault: true,
+    build: _useCase,
   ),
   'page': const TemplateSpec(
     description: 'Blank StatelessWidget screen',
@@ -47,8 +62,14 @@ final Map<String, TemplateSpec<FeatureTemplateBuilder>> featureTemplates = {
     isDefault: false,
     build: _model,
   ),
+  'repository': const TemplateSpec(
+    description: 'Repository using NetworkInfo (MVVM)',
+    isDefault: false,
+    build: _mvvmRepository,
+  ),
   'viewmodel': const TemplateSpec(
-    description: 'ChangeNotifier view model (MVVM, no package needed)',
+    description:
+        'ChangeNotifier view model wired to its repository (MVVM, no package needed)',
     isDefault: false,
     build: _viewModel,
   ),
@@ -58,7 +79,8 @@ final Map<String, TemplateSpec<FeatureTemplateBuilder>> featureTemplates = {
     build: _view,
   ),
   'cubit': const TemplateSpec(
-    description: 'Bloc Cubit (needs equatable, flutter_bloc)',
+    description:
+        'Bloc Cubit wired to its use case (needs equatable, flutter_bloc)',
     isDefault: false,
     build: _cubit,
   ),
@@ -92,23 +114,44 @@ String? renderFeatureTemplate(
   );
 }
 
+String _entity({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+class ${featureName.toPascalCase()}Entity {
+  const ${featureName.toPascalCase()}Entity();
+
+  // Add your entity fields here — the plain, framework-free shape of this
+  // feature's data, as the domain layer sees it
+}
+''';
+
+String _dataModel({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+import 'package:$packageName/$importRoot/$featureName/domain/entities/${featureName}_entity.dart';
+
+/// The data layer's shape of ${featureName.toPascalCase()}Entity — add
+/// fromJson/toJson (or your serialization format) here, then map to/from
+/// ${featureName.toPascalCase()}Entity.
+class ${featureName.toPascalCase()}Model extends ${featureName.toPascalCase()}Entity {
+  const ${featureName.toPascalCase()}Model();
+
+  // Add your fromJson/toJson (or similar) here
+}
+''';
+
 String _dataSource({
   required String packageName,
   required String featureName,
   required String importRoot,
 }) => '''
-abstract class ${featureName.toPascalCase()}DataSource {
-  // Add your data source here
-}
-''';
-
-String _repo({
-  required String packageName,
-  required String featureName,
-  required String importRoot,
-}) => '''
-abstract class ${featureName.toPascalCase()}Repo {
-  // Add your repo here
+abstract class ${featureName.toPascalCase()}RemoteDataSource {
+  // Add your remote calls here — throw a ServerException on failure, the
+  // repository maps it to a Failure for the rest of the app to handle
 }
 ''';
 
@@ -117,10 +160,26 @@ String _dataSourceImpl({
   required String featureName,
   required String importRoot,
 }) => '''
-import 'package:$packageName/$importRoot/$featureName/domain/data_source/${featureName}_data_source.dart';
+import 'package:$packageName/$importRoot/$featureName/data/datasources/${featureName}_remote_data_source.dart';
 
-class ${featureName.toPascalCase()}DataSourceImpl implements ${featureName.toPascalCase()}DataSource {
-  // Add your data source implementation here
+class ${featureName.toPascalCase()}RemoteDataSourceImpl
+    implements ${featureName.toPascalCase()}RemoteDataSource {
+  // Add your http client (e.g. Dio) dependency here
+
+  // Add your remote call implementations here
+}
+''';
+
+String _repo({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+abstract class ${featureName.toPascalCase()}Repository {
+  // Add your repository methods here, returning Result<T> from
+  // core/error/failures.dart so callers can handle failure without
+  // try/catch, e.g.:
+  // Future<Result<${featureName.toPascalCase()}Entity>> get${featureName.toPascalCase()}();
 }
 ''';
 
@@ -129,14 +188,40 @@ String _repoImpl({
   required String featureName,
   required String importRoot,
 }) => '''
-import 'package:$packageName/$importRoot/$featureName/domain/data_source/${featureName}_data_source.dart';
-import 'package:$packageName/$importRoot/$featureName/domain/repo/${featureName}_repo.dart';
+import 'package:$packageName/core/network/network_info.dart';
+import 'package:$packageName/$importRoot/$featureName/data/datasources/${featureName}_remote_data_source.dart';
+import 'package:$packageName/$importRoot/$featureName/domain/repositories/${featureName}_repository.dart';
 
-class ${featureName.toPascalCase()}RepoImpl implements ${featureName.toPascalCase()}Repo {
-  ${featureName.toPascalCase()}RepoImpl({required this.remote});
-  final ${featureName.toPascalCase()}DataSource remote;
+class ${featureName.toPascalCase()}RepositoryImpl
+    implements ${featureName.toPascalCase()}Repository {
+  ${featureName.toPascalCase()}RepositoryImpl({
+    required this.remoteDataSource,
+    required this.networkInfo,
+  });
 
-  // Add your repo implementation here
+  final ${featureName.toPascalCase()}RemoteDataSource remoteDataSource;
+  final NetworkInfo networkInfo;
+
+  // Implement the methods declared in ${featureName.toPascalCase()}Repository
+  // here — check networkInfo.isConnected before calling remoteDataSource,
+  // and map a ServerException to a ServerFailure (see core/error)
+}
+''';
+
+String _useCase({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+import 'package:$packageName/$importRoot/$featureName/domain/repositories/${featureName}_repository.dart';
+
+class ${featureName.toPascalCase()}UseCase {
+  const ${featureName.toPascalCase()}UseCase(this.repository);
+
+  final ${featureName.toPascalCase()}Repository repository;
+
+  // Add your use case call(s) here — one per action this feature exposes
+  // to the presentation layer, e.g. call() or get/update/delete methods
 }
 ''';
 
@@ -147,13 +232,14 @@ String _cubit({
 }) => '''
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:$packageName/$importRoot/$featureName/domain/repo/${featureName}_repo.dart';
+import 'package:$packageName/$importRoot/$featureName/domain/usecases/${featureName}_usecase.dart';
 
 part '${featureName}_state.dart';
 
 class ${featureName.toPascalCase()}Cubit extends Cubit<${featureName.toPascalCase()}State> {
-  ${featureName.toPascalCase()}Cubit({required this.repo}) : super(${featureName.toPascalCase()}Initial());
-  final ${featureName.toPascalCase()}Repo repo;
+  ${featureName.toPascalCase()}Cubit({required this.useCase})
+    : super(${featureName.toPascalCase()}Initial());
+  final ${featureName.toPascalCase()}UseCase useCase;
 
   void get clear {
     emit(${featureName.toPascalCase()}Initial());
@@ -223,7 +309,26 @@ String _model({
 class ${featureName.toPascalCase()}Model {
   const ${featureName.toPascalCase()}Model();
 
-  // Add your model fields here
+  // Add your fields here, plus fromJson/toJson if this is fetched from an API
+}
+''';
+
+String _mvvmRepository({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+import 'package:$packageName/core/network/network_info.dart';
+
+class ${featureName.toPascalCase()}Repository {
+  const ${featureName.toPascalCase()}Repository({required this.networkInfo});
+
+  final NetworkInfo networkInfo;
+
+  // Add your data access here (API calls, local storage, ...), returning
+  // Result<${featureName.toPascalCase()}Model> (see core/error/failures.dart
+  // and ../model/${featureName}_model.dart) so the view model can handle
+  // failure without try/catch
 }
 ''';
 
@@ -233,12 +338,18 @@ String _viewModel({
   required String importRoot,
 }) => '''
 import 'package:flutter/foundation.dart';
-import 'package:$packageName/$importRoot/$featureName/model/${featureName}_model.dart';
+import 'package:$packageName/$importRoot/$featureName/repository/${featureName}_repository.dart';
 
 class ${featureName.toPascalCase()}ViewModel extends ChangeNotifier {
-  ${featureName.toPascalCase()}Model? model;
+  ${featureName.toPascalCase()}ViewModel({required this.repository});
 
-  // Add your view model logic here, call notifyListeners() after each change
+  final ${featureName.toPascalCase()}Repository repository;
+
+  bool isLoading = false;
+  Object? error;
+
+  // Add your view state (e.g. the fetched ${featureName.toPascalCase()}Model)
+  // and logic here — call notifyListeners() after each change
 }
 ''';
 
@@ -248,6 +359,8 @@ String _view({
   required String importRoot,
 }) => '''
 import 'package:flutter/material.dart';
+import 'package:$packageName/core/network/network_info.dart';
+import 'package:$packageName/$importRoot/$featureName/repository/${featureName}_repository.dart';
 import 'package:$packageName/$importRoot/$featureName/viewmodel/${featureName}_viewmodel.dart';
 
 class ${featureName.toPascalCase()}View extends StatefulWidget {
@@ -259,7 +372,11 @@ class ${featureName.toPascalCase()}View extends StatefulWidget {
 }
 
 class _${featureName.toPascalCase()}ViewState extends State<${featureName.toPascalCase()}View> {
-  final _viewModel = ${featureName.toPascalCase()}ViewModel();
+  final _viewModel = ${featureName.toPascalCase()}ViewModel(
+    repository: ${featureName.toPascalCase()}Repository(
+      networkInfo: const NetworkInfoImpl(),
+    ),
+  );
 
   @override
   void dispose() {
@@ -287,24 +404,33 @@ String _featureInjection({
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:$packageName/$importRoot/$featureName/data/data_source_impl/${featureName}_data_source_impl.dart';
-import 'package:$packageName/$importRoot/$featureName/data/repo_impl/${featureName}_repo_impl.dart';
-import 'package:$packageName/$importRoot/$featureName/domain/data_source/${featureName}_data_source.dart';
-import 'package:$packageName/$importRoot/$featureName/domain/repo/${featureName}_repo.dart';
+import 'package:$packageName/$importRoot/$featureName/data/datasources/${featureName}_remote_data_source.dart';
+import 'package:$packageName/$importRoot/$featureName/data/datasources/${featureName}_remote_data_source_impl.dart';
+import 'package:$packageName/$importRoot/$featureName/data/repositories/${featureName}_repository_impl.dart';
+import 'package:$packageName/$importRoot/$featureName/domain/repositories/${featureName}_repository.dart';
+import 'package:$packageName/$importRoot/$featureName/domain/usecases/${featureName}_usecase.dart';
 import 'package:$packageName/$importRoot/$featureName/presentation/cubit/${featureName}_cubit.dart';
 import 'package:$packageName/injection_container.dart';
 
 Future<void> init${featureName.toPascalCase()}Injection(GetIt sl) async {
   //* Blocs
-  sl.registerLazySingleton(() => ${featureName.toPascalCase()}Cubit(repo: sl()));
+  sl.registerLazySingleton(() => ${featureName.toPascalCase()}Cubit(useCase: sl()));
 
   //* Use cases
+  sl.registerLazySingleton(() => ${featureName.toPascalCase()}UseCase(sl()));
 
   //* Repository
-  sl.registerLazySingleton<${featureName.toPascalCase()}Repo>(() => ${featureName.toPascalCase()}RepoImpl(remote: sl()));
+  sl.registerLazySingleton<${featureName.toPascalCase()}Repository>(
+    () => ${featureName.toPascalCase()}RepositoryImpl(
+      remoteDataSource: sl(),
+      networkInfo: sl(),
+    ),
+  );
 
   //* Data sources
-  sl.registerLazySingleton<${featureName.toPascalCase()}DataSource>(() => ${featureName.toPascalCase()}DataSourceImpl());
+  sl.registerLazySingleton<${featureName.toPascalCase()}RemoteDataSource>(
+    () => ${featureName.toPascalCase()}RemoteDataSourceImpl(),
+  );
 }
 
 void clear${featureName.toPascalCase()}(BuildContext context) {
