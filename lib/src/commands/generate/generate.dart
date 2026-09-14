@@ -4,6 +4,8 @@ import 'package:archify/src/commands/generate/feature_templates.dart';
 import 'package:archify/src/commands/generate/injection_wiring.dart';
 import 'package:archify/src/commands/init/init.dart';
 import 'package:archify/src/utils/fs_utils.dart';
+import 'package:archify/src/utils/manifest.dart';
+import 'package:archify/src/utils/reconcile.dart';
 import 'package:archify/src/utils/yaml_tree.dart';
 import 'package:yaml/yaml.dart';
 
@@ -68,13 +70,29 @@ class GenerateCommand {
     final importRoot =
         featureRoot.startsWith('lib/') ? featureRoot.substring(4) : featureRoot;
     final packageName = getPackageName();
+    final featureTemplateNode = doc['feature_template'] as Map;
+
+    String transformName(String name) =>
+        name.replaceAll('{feature_name}', featureName);
+
+    final desiredPaths = collectYamlTreePaths(
+      featureRoot,
+      featureTemplateNode,
+      transformName: transformName,
+    );
+
+    final manifest = ArchifyManifest.load();
+    reconcileRemovedPaths(
+      previousPaths: manifest.features[featureName] ?? {},
+      currentPaths: desiredPaths,
+    );
 
     String? injectionFilePath;
 
     walkYamlTree(
       featureRoot,
-      doc['feature_template'],
-      transformName: (name) => name.replaceAll('{feature_name}', featureName),
+      featureTemplateNode,
+      transformName: transformName,
       resolveFileContent: (path, templateKey) {
         final rendered = renderFeatureTemplate(
           templateKey,
@@ -113,6 +131,9 @@ class GenerateCommand {
         injectionImportPath: importPath,
       );
     }
+
+    manifest.features[featureName] = desiredPaths;
+    manifest.save();
   }
 
   /// Prompts user for confirmation, defaulting to "yes" on empty input.

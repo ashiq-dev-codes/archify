@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:example/feature/auth/presentation/page/auth_page.dart';
-import 'package:example/shared/theme/main_theme.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -15,10 +13,11 @@ class _AppState extends State<App> {
     // Wrap in MultiBlocProvider (flutter_bloc) if you use Bloc/Cubit
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: MainTheme.mainThemeData(false),
 
-      // dart run archify generate <feature> to add more screens
-      home: const AuthScreen(),
+      // Add your theme here (e.g. MainTheme.mainThemeData from
+      // shared/theme/main_theme.dart, if your structure generates one)
+
+      // Add your screen here
     );
   }
 }

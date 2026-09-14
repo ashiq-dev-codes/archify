@@ -84,7 +84,7 @@ lib/
 ```
 
 * `core/config` and `shared/utils` are empty on purpose — the networking (`dio_client`/`app_config`), navigation, route-tracking, local-storage, and DI (`injection_container`) helpers that used to live here are now **opt-in**. `dart run archify templates` lists them.
-* `main.dart`, `app.dart`, and `root.dart` use nothing beyond the Flutter SDK. MultiBlocProvider, error logging, local storage, and DevicePreview are left as commented-out examples for you to wire up if you want them.
+* `main.dart`, `app.dart`, and `root.dart` use nothing beyond the Flutter SDK, and don't assume any other generated file exists either — theming, DI, and your first screen are left as commented-out spots in `app.dart` for you to wire up, exactly like MultiBlocProvider, error logging, local storage, and DevicePreview already were.
 * Archify **never edits `pubspec.yaml`** — after `configure`, it prints the exact `flutter pub add ...` command for whichever opt-in templates need a package.
 
 A generated feature (`dart run archify generate auth`) follows the same idea:
@@ -111,8 +111,8 @@ lib/feature/auth/
 | Command | What it does |
 |---|---|
 | `init` | Creates `archify.yaml`. No-ops (with a message) if it already exists. |
-| `configure` | Scaffolds the project from `archify.yaml`. Safe to re-run — only creates/updates what changed. Prompts before overwriting `lib/main.dart` if it looks like real code (not the default counter app), and keeps a `.bak` copy. |
-| `generate <feature>` | Scaffolds a feature from `archify.yaml`'s `feature_template`. |
+| `configure` | Scaffolds the project from `archify.yaml`. Safe to re-run — creates/updates what changed **and backs up what you removed** (see [below](#editing-archifyyaml-after-the-fact)). Prompts before overwriting `lib/main.dart` if it looks like real code (not the default counter app), and keeps a `.bak` copy. |
+| `generate <feature>` | Scaffolds a feature from `archify.yaml`'s `feature_template`. Re-running it for an existing feature reconciles it the same way `configure` does. |
 | `custom <feature> --template <file.yaml>` | Scaffolds a feature from a one-off YAML template instead of `archify.yaml` — see [below](#generate-a-fully-custom-feature). |
 | `templates` | Lists every built-in template key. |
 | `reset-project [--example-dir <name>]` | Resets `lib/` to a blank single-screen starter — see [below](#reset-a-project-back-to-a-blank-starter). |
@@ -125,6 +125,21 @@ Add a `feature_injection` file to `feature_template` (see `dart run archify temp
 * A `[feature]_injection.dart` registering the feature's repository, data source, and Cubit with GetIt.
 * An automatic import + init call added to `injection_container.dart` — add `injection_container` back to `structure` too.
 * An automatic entry in `app.dart`'s `MultiBlocProvider` `providers: [...]` list — you need to wrap `MaterialApp` in a `MultiBlocProvider` yourself first (see the commented example in generated `app.dart`); Archify only inserts into an existing list, it doesn't add the wrapper.
+
+---
+
+## Editing `archify.yaml` after the fact
+
+`structure` and `feature_template` are meant to be rewritten, not just written once — `configure`/`generate` fully reconcile the tree to match what's currently in the YAML, in both directions:
+
+* Add a key → the file/folder gets created next run, like always.
+* Remove a key → whatever it created gets pulled out of `lib/` next run too, instead of being left behind stale.
+
+Nothing is ever deleted outright. A path Archify stops managing is moved to `.archify/removed/<timestamp>/...`, preserving where it was — recoverable, not destroyed, the same way `configure` keeps a `.bak` of `lib/main.dart` before touching it. It's safe to delete that folder (or gitignore it) once you're sure you don't need it back.
+
+This only ever touches paths Archify itself created. To know which ones that is, `configure`/`generate` keep a manifest at `.archify/manifest.json` recording what the last run produced — **commit it** alongside `archify.yaml` so reconciliation stays consistent across machines and CI. Anything you added by hand inside those same folders (a widget you wrote in `shared/widget/` after scaffolding, say) was never in the manifest, so it's never touched.
+
+Note this doesn't extend to files with real Dart code in them that Archify regenerates unconditionally, like `app.dart` — if you've wired in a `home:` screen or a theme, re-running `configure` overwrites it back to the bare template. Re-apply your wiring after each `configure` run, the same way you already do after `generate`.
 
 ---
 

@@ -72,6 +72,97 @@ void main() {
       expect(Directory('${tempDir.path}/lib/core').existsSync(), isTrue);
     });
 
+    test('Configure removes paths dropped from structure, with a backup', () {
+      final tempDir = Directory.systemTemp.createTempSync('archify_test_');
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+      final configPath = '${tempDir.path}/archify.yaml';
+      final markerPath = '${tempDir.path}/lib/shared/theme/removal_test.md';
+
+      Process.runSync('dart', [
+        binPath,
+        'init',
+      ], workingDirectory: tempDir.path);
+
+      // Add an extra (unmapped, so it's created empty) file to `structure`
+      // and configure — establishes the manifest baseline that includes it.
+      File(configPath).writeAsStringSync(
+        File(configPath).readAsStringSync().replaceFirst(
+          'app_colors.dart: theme_colors',
+          'app_colors.dart: theme_colors\n        removal_test.md:',
+        ),
+      );
+      Process.runSync('dart', [
+        binPath,
+        'configure',
+      ], workingDirectory: tempDir.path);
+      expect(File(markerPath).existsSync(), isTrue);
+
+      // Remove it again and reconfigure — it should disappear from lib/ but
+      // land in a recoverable backup instead of just vanishing.
+      File(configPath).writeAsStringSync(
+        File(configPath).readAsStringSync().replaceFirst(
+          'app_colors.dart: theme_colors\n        removal_test.md:',
+          'app_colors.dart: theme_colors',
+        ),
+      );
+      final result = Process.runSync('dart', [
+        binPath,
+        'configure',
+      ], workingDirectory: tempDir.path);
+
+      expect(result.stdout.toString(), contains('backed up'));
+      expect(File(markerPath).existsSync(), isFalse);
+
+      final backups = Directory('${tempDir.path}/.archify/removed')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('removal_test.md'));
+      expect(backups, isNotEmpty);
+    });
+
+    test(
+      'Generate removes paths dropped from feature_template, with a backup',
+      () {
+        final tempDir = Directory.systemTemp.createTempSync('archify_test_');
+        addTearDown(() => tempDir.deleteSync(recursive: true));
+        final configPath = '${tempDir.path}/archify.yaml';
+        final widgetDirPath =
+            '${tempDir.path}/lib/feature/auth/presentation/widget';
+
+        Process.runSync('dart', [
+          binPath,
+          'init',
+        ], workingDirectory: tempDir.path);
+        Process.runSync('dart', [
+          binPath,
+          'generate',
+          'auth',
+        ], workingDirectory: tempDir.path);
+        expect(Directory(widgetDirPath).existsSync(), isTrue);
+
+        // Drop the `widget:` folder from feature_template and regenerate —
+        // it should be pulled out of the feature, not left stale.
+        File(configPath).writeAsStringSync(
+          File(configPath).readAsStringSync().replaceFirst(
+            '"{feature_name}_page.dart": page\n      widget:\n',
+            '"{feature_name}_page.dart": page\n',
+          ),
+        );
+        final result = Process.runSync('dart', [
+          binPath,
+          'generate',
+          'auth',
+        ], workingDirectory: tempDir.path);
+
+        expect(result.stdout.toString(), contains('backed up'));
+        expect(Directory(widgetDirPath).existsSync(), isFalse);
+        expect(
+          Directory('${tempDir.path}/.archify/removed').existsSync(),
+          isTrue,
+        );
+      },
+    );
+
     test('Templates command lists built-in template keys', () {
       final result = Process.runSync('dart', [binPath, 'templates']);
       final output = result.stdout.toString();

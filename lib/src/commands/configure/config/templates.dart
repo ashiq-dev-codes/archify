@@ -117,7 +117,6 @@ String? renderBaseTemplate(String key, String packageName) =>
 
 String _app(String packageName) => '''
 import 'package:flutter/material.dart';
-import 'package:$packageName/shared/theme/main_theme.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -132,7 +131,9 @@ class _AppState extends State<App> {
     // Wrap in MultiBlocProvider (flutter_bloc) if you use Bloc/Cubit
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: MainTheme.mainThemeData(false),
+
+      // Add your theme here (e.g. MainTheme.mainThemeData from
+      // shared/theme/main_theme.dart, if your structure generates one)
 
       // Add your screen here
     );

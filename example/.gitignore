@@ -46,3 +46,8 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Archify backs up anything it removes from archify.yaml here instead of
+# deleting it outright — disposable, safe to ignore. Keep .archify/manifest.json
+# tracked though: it's how `configure`/`generate` know what to reconcile.
+/.archify/removed/

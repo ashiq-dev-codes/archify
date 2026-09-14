@@ -1,3 +1,9 @@
+## Unreleased
+
+* `configure` and `generate` now fully reconcile `structure`/`feature_template` against the YAML instead of only ever adding to it: removing a key gets its file/folder pulled out of `lib/` on the next run, not left behind stale. Nothing is deleted outright — a removed path is moved to `.archify/removed/<timestamp>/...`, recoverable rather than destroyed. Reconciliation is tracked via a new `.archify/manifest.json` (commit it alongside `archify.yaml`) recording what the last run created, so anything you added by hand is never touched.
+* Fixed the `app` template hardcoding an import of `shared/theme/main_theme.dart` regardless of whether `structure` still declares it — removing theme-related keys from `structure` no longer breaks `app.dart`'s compile. Theming is now left as a commented-out wiring spot, like the screen/state-management ones already were.
+* Added a full Flutter `example/` app (previously just a `main.dart` API-usage script) with `archify` wired in as a local path dev dependency, so the CLI can be exercised against a real, runnable project.
+
 ## 1.1.0
 
 Archify is now driven entirely by a single `archify.yaml` file you control, instead of hardcoding one architecture.
