@@ -1,6 +1,8 @@
-/// The default `archify.yaml` content written the first time
-/// `dart run archify init` runs in a project.
-const defaultArchifyConfig = '''
+/// The `archify.yaml` content written by `dart run archify init --arch ddd`
+/// (the default when no architecture is picked) — DDD/Clean-Architecture
+/// flavored: `data`/`domain`/`presentation` per feature, repo + data source
+/// pattern.
+const dddArchifyConfig = '''
 # archify.yaml — the project tree Archify scaffolds. It's just folders and
 # files; rewrite it into any architecture you want (DDD, MVVM, whatever) —
 # Archify only reads this file, it has no opinions of its own.

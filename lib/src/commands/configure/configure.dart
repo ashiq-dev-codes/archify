@@ -33,7 +33,7 @@ class ConfigureCommand {
         return;
       }
 
-      InitCommand().run();
+      InitCommand().run(const []);
 
       if (!configFile.existsSync()) {
         print('❌ archify.yaml still not found after running init.');

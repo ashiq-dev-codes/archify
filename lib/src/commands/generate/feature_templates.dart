@@ -42,6 +42,21 @@ final Map<String, TemplateSpec<FeatureTemplateBuilder>> featureTemplates = {
     isDefault: true,
     build: _page,
   ),
+  'model': const TemplateSpec(
+    description: 'Plain data model (MVVM)',
+    isDefault: false,
+    build: _model,
+  ),
+  'viewmodel': const TemplateSpec(
+    description: 'ChangeNotifier view model (MVVM, no package needed)',
+    isDefault: false,
+    build: _viewModel,
+  ),
+  'view': const TemplateSpec(
+    description: 'StatefulWidget view wired to its ViewModel (MVVM)',
+    isDefault: false,
+    build: _view,
+  ),
   'cubit': const TemplateSpec(
     description: 'Bloc Cubit (needs equatable, flutter_bloc)',
     isDefault: false,
@@ -196,6 +211,70 @@ class ${featureName.toPascalCase()}Screen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(body: Placeholder());
+  }
+}
+''';
+
+String _model({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+class ${featureName.toPascalCase()}Model {
+  const ${featureName.toPascalCase()}Model();
+
+  // Add your model fields here
+}
+''';
+
+String _viewModel({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+import 'package:flutter/foundation.dart';
+import 'package:$packageName/$importRoot/$featureName/model/${featureName}_model.dart';
+
+class ${featureName.toPascalCase()}ViewModel extends ChangeNotifier {
+  ${featureName.toPascalCase()}Model? model;
+
+  // Add your view model logic here, call notifyListeners() after each change
+}
+''';
+
+String _view({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+import 'package:flutter/material.dart';
+import 'package:$packageName/$importRoot/$featureName/viewmodel/${featureName}_viewmodel.dart';
+
+class ${featureName.toPascalCase()}View extends StatefulWidget {
+  const ${featureName.toPascalCase()}View({super.key});
+
+  @override
+  State<${featureName.toPascalCase()}View> createState() =>
+      _${featureName.toPascalCase()}ViewState();
+}
+
+class _${featureName.toPascalCase()}ViewState extends State<${featureName.toPascalCase()}View> {
+  final _viewModel = ${featureName.toPascalCase()}ViewModel();
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: ListenableBuilder(
+        listenable: _viewModel,
+        builder: (context, _) => Placeholder(),
+      ),
+    );
   }
 }
 ''';
