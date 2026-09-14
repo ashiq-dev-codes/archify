@@ -1,3 +1,15 @@
+/// The `archify.yaml` content written by
+/// `dart run archify init --arch vgv-bloc` — the Very Good Ventures /
+/// `flutter_bloc` feature convention: a `Page` that provides the `Bloc` and
+/// handles routing, and a `View` that's pure UI reading `Bloc` state — full
+/// `Bloc`/`Event`/`State` (not a `Cubit`). Unlike the other presets, this one
+/// genuinely needs a package: the whole point is `flutter_bloc` + `equatable`,
+/// so `init` prints a reminder to add them before you generate a feature.
+///
+/// Deliberately doesn't scaffold VGV's flavors/multi-entrypoint convention
+/// (`main_development.dart`/`main_staging.dart`/`main_production.dart`) —
+/// `archify.yaml` only models a single `main.dart` today.
+const vgvBlocArchifyConfig = '''
 # archify.yaml — the project tree Archify scaffolds. It's just folders and
 # files; rewrite it into any architecture you want (DDD, MVVM, whatever) —
 # Archify only reads this file, it has no opinions of its own.
@@ -27,8 +39,6 @@ structure:
         exceptions.dart: core_exceptions
       network:
         network_info.dart: core_network_info
-      usecase:
-        usecase.dart: core_usecase
       models:
     feature: # generated features live here
     shared: # reusable theme, widgets, constants, utils
@@ -56,23 +66,14 @@ feature_root: lib/feature
 
 feature_template:
   "{feature_name}":
-    data: # remote data source + repository implementations
-      datasources:
-        "{feature_name}_remote_data_source.dart": data_source
-        "{feature_name}_remote_data_source_impl.dart": data_source_impl
-      models:
-        "{feature_name}_model.dart": data_model
-      repositories:
-        "{feature_name}_repository_impl.dart": repo_impl
-    domain: # the only layer presentation depends on
-      entities:
-        "{feature_name}_entity.dart": entity
-      repositories:
-        "{feature_name}_repository.dart": repo
-      usecases:
-        "{feature_name}_usecase.dart": usecase
-    presentation: # screens, widgets, state
-      cubit:
-      page:
-        "{feature_name}_page.dart": page
-      widget:
+    data:
+      "{feature_name}_repository.dart": repository
+    bloc: # full Bloc — Event-driven, not a Cubit
+      "{feature_name}_bloc.dart": vgv_bloc
+      "{feature_name}_event.dart": vgv_event
+      "{feature_name}_state.dart": vgv_state
+    view: # Page provides the Bloc + route; View is the actual UI
+      "{feature_name}_page.dart": vgv_page
+      "{feature_name}_view.dart": vgv_view
+      widgets:
+''';

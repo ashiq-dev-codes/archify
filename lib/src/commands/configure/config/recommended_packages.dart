@@ -1,7 +1,9 @@
 /// Packages needed by the opt-in Cubit/Bloc templates (`cubit`, `cubit_state`,
-/// `feature_injection`) — neither the default `structure` (used by
-/// `configure`) nor the default `feature_template` (used by `generate`)
-/// scaffolds anything that needs a package beyond the Flutter SDK.
+/// `feature_injection`, and the VGV-Bloc preset's `vgv_bloc`/`vgv_event`/
+/// `vgv_state`/`vgv_page`/`vgv_view`) — neither the default `structure`
+/// (used by `configure`) nor the default `feature_template` (used by
+/// `generate`) scaffolds anything that needs a package beyond the Flutter
+/// SDK.
 ///
 /// Archify never edits `pubspec.yaml` — the developer adds whichever of
 /// these they actually use via `flutter pub add`. `dio`, `get_it`,

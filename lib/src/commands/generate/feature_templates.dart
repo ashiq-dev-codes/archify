@@ -58,13 +58,13 @@ final Map<String, TemplateSpec<FeatureTemplateBuilder>> featureTemplates = {
     build: _page,
   ),
   'model': const TemplateSpec(
-    description: 'Plain data model (MVVM, Feature-First)',
+    description: 'Plain data model (MVVM, Feature-First, MVC)',
     isDefault: false,
     build: _model,
   ),
   'repository': const TemplateSpec(
     description:
-        'Repository using NetworkInfo, no interface (MVVM, Feature-First)',
+        'Repository using NetworkInfo, no interface (MVVM, Feature-First, MVC)',
     isDefault: false,
     build: _mvvmRepository,
   ),
@@ -96,6 +96,45 @@ final Map<String, TemplateSpec<FeatureTemplateBuilder>> featureTemplates = {
         'StatefulWidget screen wired to its Controller (Feature-First)',
     isDefault: false,
     build: _screen,
+  ),
+  'mvc_controller': const TemplateSpec(
+    description:
+        'Plain controller — no Listenable, the View manages its own setState (MVC)',
+    isDefault: false,
+    build: _mvcController,
+  ),
+  'mvc_view': const TemplateSpec(
+    description: 'StatefulWidget view that drives its Controller (MVC)',
+    isDefault: false,
+    build: _mvcView,
+  ),
+  'vgv_bloc': const TemplateSpec(
+    description:
+        'Bloc wired to its repository — Event/State, not Cubit (VGV-Bloc, needs equatable, flutter_bloc)',
+    isDefault: false,
+    build: _vgvBloc,
+  ),
+  'vgv_event': const TemplateSpec(
+    description: 'Bloc event classes (VGV-Bloc, needs equatable)',
+    isDefault: false,
+    build: _vgvEvent,
+  ),
+  'vgv_state': const TemplateSpec(
+    description: 'Bloc state classes (VGV-Bloc, needs equatable)',
+    isDefault: false,
+    build: _vgvState,
+  ),
+  'vgv_page': const TemplateSpec(
+    description:
+        'Page — provides the Bloc + route, no UI itself (VGV-Bloc, needs flutter_bloc)',
+    isDefault: false,
+    build: _vgvPage,
+  ),
+  'vgv_view': const TemplateSpec(
+    description:
+        'View — the actual UI, reads Bloc state (VGV-Bloc, needs flutter_bloc)',
+    isDefault: false,
+    build: _vgvView,
   ),
   'cubit': const TemplateSpec(
     description:
@@ -494,6 +533,185 @@ class _${featureName.toPascalCase()}ScreenState extends State<${featureName.toPa
       body: ListenableBuilder(
         listenable: _controller,
         builder: (context, _) => Placeholder(),
+      ),
+    );
+  }
+}
+''';
+
+String _mvcController({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+import 'package:$packageName/$importRoot/$featureName/repository/${featureName}_repository.dart';
+
+class ${featureName.toPascalCase()}Controller {
+  const ${featureName.toPascalCase()}Controller({required this.repository});
+
+  final ${featureName.toPascalCase()}Repository repository;
+
+  // Add your controller actions here, e.g.:
+  // Future<Result<${featureName.toPascalCase()}Model>> load() => ...
+  //
+  // Call these from the View's State and setState() yourself afterward —
+  // unlike MVVM's ViewModel or Feature-First's Controller, this Controller
+  // doesn't hold or notify view state itself
+}
+''';
+
+String _mvcView({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+import 'package:flutter/material.dart';
+import 'package:$packageName/core/network/network_info.dart';
+import 'package:$packageName/$importRoot/$featureName/controllers/${featureName}_controller.dart';
+import 'package:$packageName/$importRoot/$featureName/repository/${featureName}_repository.dart';
+
+class ${featureName.toPascalCase()}View extends StatefulWidget {
+  const ${featureName.toPascalCase()}View({super.key});
+
+  @override
+  State<${featureName.toPascalCase()}View> createState() =>
+      _${featureName.toPascalCase()}ViewState();
+}
+
+class _${featureName.toPascalCase()}ViewState extends State<${featureName.toPascalCase()}View> {
+  // Call a _controller action, then setState(() { ... }) with the result —
+  // there's no Listenable here for the controller to notify through
+  // ignore: unused_field
+  final _controller = ${featureName.toPascalCase()}Controller(
+    repository: ${featureName.toPascalCase()}Repository(
+      networkInfo: const NetworkInfoImpl(),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(body: Placeholder());
+  }
+}
+''';
+
+String _vgvBloc({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:$packageName/$importRoot/$featureName/data/${featureName}_repository.dart';
+
+part '${featureName}_event.dart';
+part '${featureName}_state.dart';
+
+class ${featureName.toPascalCase()}Bloc
+    extends Bloc<${featureName.toPascalCase()}Event, ${featureName.toPascalCase()}State> {
+  ${featureName.toPascalCase()}Bloc({required this.repository})
+    : super(${featureName.toPascalCase()}Initial()) {
+    // Add your on<Event>((event, emit) { ... }) handlers here
+  }
+
+  final ${featureName.toPascalCase()}Repository repository;
+}
+''';
+
+String _vgvEvent({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+part of '${featureName}_bloc.dart';
+
+abstract class ${featureName.toPascalCase()}Event extends Equatable {
+  const ${featureName.toPascalCase()}Event();
+
+  @override
+  List<Object> get props => [];
+}
+
+// Add your events here, e.g.:
+// class ${featureName.toPascalCase()}Started extends ${featureName.toPascalCase()}Event {}
+''';
+
+String _vgvState({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+part of '${featureName}_bloc.dart';
+
+abstract class ${featureName.toPascalCase()}State extends Equatable {
+  const ${featureName.toPascalCase()}State();
+
+  @override
+  List<Object> get props => [];
+}
+
+class ${featureName.toPascalCase()}Initial extends ${featureName.toPascalCase()}State {}
+
+// Add your other states here
+''';
+
+String _vgvPage({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:$packageName/core/network/network_info.dart';
+import 'package:$packageName/$importRoot/$featureName/bloc/${featureName}_bloc.dart';
+import 'package:$packageName/$importRoot/$featureName/data/${featureName}_repository.dart';
+import 'package:$packageName/$importRoot/$featureName/view/${featureName}_view.dart';
+
+/// Provides the Bloc and handles routing — no UI of its own, that's
+/// ${featureName.toPascalCase()}View's job.
+class ${featureName.toPascalCase()}Page extends StatelessWidget {
+  const ${featureName.toPascalCase()}Page({super.key});
+
+  static Route<void> route() {
+    return MaterialPageRoute<void>(builder: (_) => const ${featureName.toPascalCase()}Page());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create:
+          (_) => ${featureName.toPascalCase()}Bloc(
+            repository: ${featureName.toPascalCase()}Repository(
+              networkInfo: const NetworkInfoImpl(),
+            ),
+          ),
+      child: const ${featureName.toPascalCase()}View(),
+    );
+  }
+}
+''';
+
+String _vgvView({
+  required String packageName,
+  required String featureName,
+  required String importRoot,
+}) => '''
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:$packageName/$importRoot/$featureName/bloc/${featureName}_bloc.dart';
+
+/// The actual UI — reads Bloc state, dispatches events. Pushed via
+/// ${featureName.toPascalCase()}Page, never directly.
+class ${featureName.toPascalCase()}View extends StatelessWidget {
+  const ${featureName.toPascalCase()}View({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: BlocBuilder<${featureName.toPascalCase()}Bloc, ${featureName.toPascalCase()}State>(
+        builder: (context, state) {
+          return const Placeholder();
+        },
       ),
     );
   }

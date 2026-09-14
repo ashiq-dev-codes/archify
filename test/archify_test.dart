@@ -168,6 +168,79 @@ void main() {
       },
     );
 
+    test('Generate produces controller/view for an MVC project', () {
+      final tempDir = Directory.systemTemp.createTempSync('archify_test_');
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+
+      Process.runSync('dart', [
+        binPath,
+        'init',
+        '--arch',
+        'mvc',
+      ], workingDirectory: tempDir.path);
+      final result = Process.runSync('dart', [
+        binPath,
+        'generate',
+        'auth',
+      ], workingDirectory: tempDir.path);
+
+      expect(result.stdout.toString(), contains('generated successfully'));
+      expect(
+        File(
+          '${tempDir.path}/lib/feature/auth/controllers/auth_controller.dart',
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          '${tempDir.path}/lib/feature/auth/views/auth_view.dart',
+        ).existsSync(),
+        isTrue,
+      );
+    });
+
+    test(
+      'Init --arch vgv-bloc prints a package note and scaffolds Bloc/Page/View',
+      () {
+        final tempDir = Directory.systemTemp.createTempSync('archify_test_');
+        addTearDown(() => tempDir.deleteSync(recursive: true));
+
+        final initResult = Process.runSync('dart', [
+          binPath,
+          'init',
+          '--arch',
+          'vgv-bloc',
+        ], workingDirectory: tempDir.path);
+        expect(initResult.stdout.toString(), contains('flutter_bloc'));
+
+        final result = Process.runSync('dart', [
+          binPath,
+          'generate',
+          'auth',
+        ], workingDirectory: tempDir.path);
+
+        expect(result.stdout.toString(), contains('generated successfully'));
+        expect(
+          File(
+            '${tempDir.path}/lib/feature/auth/bloc/auth_bloc.dart',
+          ).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(
+            '${tempDir.path}/lib/feature/auth/view/auth_page.dart',
+          ).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(
+            '${tempDir.path}/lib/feature/auth/view/auth_view.dart',
+          ).existsSync(),
+          isTrue,
+        );
+      },
+    );
+
     test('Configure command scaffolds the project', () {
       final tempDir = Directory.systemTemp.createTempSync('archify_test_');
       addTearDown(() => tempDir.deleteSync(recursive: true));

@@ -29,6 +29,8 @@ class InitCommand {
 
     configFile.writeAsStringSync(architecture.archifyYaml);
     print('📄 Created archify.yaml (${architecture.label})');
+    final packageNote = architecture.packageNote;
+    if (packageNote != null) print('   📦 $packageNote');
     print(
       '   Customize it, then run `dart run archify configure` to scaffold your project.',
     );
