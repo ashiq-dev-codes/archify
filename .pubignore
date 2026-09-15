@@ -1,0 +1,9 @@
+# Files here are excluded from what `dart pub publish` uploads, but stay in
+# git — the example app's native platform scaffolding isn't needed to
+# evaluate archify (a pure Dart CLI), only to `flutter run` it locally.
+example/android/
+example/ios/
+example/linux/
+example/macos/
+example/web/
+example/windows/
