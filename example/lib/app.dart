@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:example/feature/auth/presentation/page/auth_page.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -18,7 +17,7 @@ class _AppState extends State<App> {
       // Add your theme here (e.g. MainTheme.mainThemeData from
       // shared/theme/main_theme.dart, if your structure generates one)
 
-      home: const AuthScreen(),
+      // Add your screen here
     );
   }
 }
