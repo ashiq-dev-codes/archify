@@ -61,6 +61,26 @@ final Map<String, TemplateSpec<StructureTemplateBuilder>> structureTemplates = {
     isDefault: true,
     build: _loadingDialog,
   ),
+  'core_failures': const TemplateSpec(
+    description: 'Failure hierarchy + Result<T> (no package required)',
+    isDefault: true,
+    build: _coreFailures,
+  ),
+  'core_exceptions': const TemplateSpec(
+    description: 'Exception hierarchy thrown by data sources',
+    isDefault: true,
+    build: _coreExceptions,
+  ),
+  'core_network_info': const TemplateSpec(
+    description: 'NetworkInfo via a DNS lookup (no package required)',
+    isDefault: true,
+    build: _coreNetworkInfo,
+  ),
+  'core_usecase': const TemplateSpec(
+    description: 'UseCase<ReturnType, Params> base contract (DDD)',
+    isDefault: true,
+    build: _coreUseCase,
+  ),
   'injection_container': const TemplateSpec(
     description: 'GetIt service locator (init/clear hooks)',
     isDefault: false,
@@ -117,7 +137,6 @@ String? renderBaseTemplate(String key, String packageName) =>
 
 String _app(String packageName) => '''
 import 'package:flutter/material.dart';
-import 'package:$packageName/shared/theme/main_theme.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -131,9 +150,10 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     // Wrap in MultiBlocProvider (flutter_bloc) if you use Bloc/Cubit
     return MaterialApp(
-      useInheritedMediaQuery: true,
       debugShowCheckedModeBanner: false,
-      theme: MainTheme.mainThemeData(false),
+
+      // Add your theme here (e.g. MainTheme.mainThemeData from
+      // shared/theme/main_theme.dart, if your structure generates one)
 
       // Add your screen here
     );
@@ -144,11 +164,15 @@ class _AppState extends State<App> {
 String _injectionContainer(String packageName) => '''
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:$packageName/core/network/network_info.dart';
 
 final GetIt sl = GetIt.instance;
 
 abstract class ServiceLocator {
   static Future<void> init() async {
+    //* Core
+    sl.registerLazySingleton<NetworkInfo>(() => const NetworkInfoImpl());
+
     // Add your feature injections here
   }
 
@@ -750,5 +774,114 @@ class LoadingDialog {
       if (Navigator.canPop(context)) Navigator.pop(context);
     }
   }
+}
+''';
+
+String _coreFailures(String packageName) => '''
+/// A recoverable, expected failure your UI can show a message for — as
+/// opposed to an uncaught exception. Extend this for feature-specific
+/// failures; the built-in ones cover the common cases.
+sealed class Failure {
+  const Failure(this.message);
+
+  final String message;
+}
+
+class ServerFailure extends Failure {
+  const ServerFailure([super.message = 'Something went wrong on the server']);
+}
+
+class CacheFailure extends Failure {
+  const CacheFailure([
+    super.message = 'Something went wrong reading local data',
+  ]);
+}
+
+class NetworkFailure extends Failure {
+  const NetworkFailure([super.message = 'No internet connection']);
+}
+
+/// Either the [value] an operation produced, or the [Failure] it hit —
+/// pattern-match with a switch, no third-party package required:
+/// \'\'\'dart
+/// switch (result) {
+///   case Success(:final value): ...
+///   case Failed(:final failure): ...
+/// }
+/// \'\'\'
+sealed class Result<T> {
+  const Result();
+}
+
+class Success<T> extends Result<T> {
+  const Success(this.value);
+
+  final T value;
+}
+
+class Failed<T> extends Result<T> {
+  const Failed(this.failure);
+
+  final Failure failure;
+}
+''';
+
+String _coreExceptions(String packageName) => '''
+/// Thrown by a data source when a call fails; the repository catches it and
+/// maps it to a [Failure] for the rest of the app to handle.
+class ServerException implements Exception {
+  const ServerException([
+    this.message = 'Something went wrong on the server',
+  ]);
+
+  final String message;
+}
+
+class CacheException implements Exception {
+  const CacheException([
+    this.message = 'Something went wrong reading local data',
+  ]);
+
+  final String message;
+}
+''';
+
+String _coreNetworkInfo(String packageName) => '''
+import 'dart:io';
+
+/// Checks connectivity without needing a package — a lightweight DNS
+/// lookup. Swap in connectivity_plus instead if you need OS-level
+/// connectivity change events rather than an on-demand check.
+abstract class NetworkInfo {
+  Future<bool> get isConnected;
+}
+
+class NetworkInfoImpl implements NetworkInfo {
+  const NetworkInfoImpl();
+
+  @override
+  Future<bool> get isConnected async {
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      return result.isNotEmpty && result.first.rawAddress.isNotEmpty;
+    } on SocketException {
+      return false;
+    }
+  }
+}
+''';
+
+String _coreUseCase(String packageName) => '''
+import 'package:$packageName/core/error/failures.dart';
+
+/// One application action — implement `call` per use case, e.g.:
+/// `class Get\${Feature} extends UseCase<\${Feature}Entity, NoParams> { ... }`
+abstract class UseCase<ReturnType, Params> {
+  Future<Result<ReturnType>> call(Params params);
+}
+
+/// Pass this to a [UseCase] that doesn't need parameters.
+class NoParams {
+  const NoParams();
 }
 ''';

@@ -40,8 +40,8 @@ class ArchifyCLI {
     switch (command) {
       case 'init':
 
-        /// Creates archify.yaml
-        InitCommand().run();
+        /// Creates archify.yaml, optionally from --arch <ddd|mvvm|...>
+        InitCommand().run(commandArgs);
         break;
 
       case 'configure':
@@ -93,7 +93,7 @@ class ArchifyCLI {
     );
     print('\nCommands:');
     print(
-      '  init                    Create archify.yaml describing your project architecture',
+      '  init [--arch <key>]     Create archify.yaml, optionally picking an architecture non-interactively',
     );
     print(
       '  configure               Scaffold the project from archify.yaml (creates it first if missing)',
@@ -112,6 +112,7 @@ class ArchifyCLI {
     );
     print('  version                 Show current Archify CLI version');
     print('\nExample:');
+    print('  archify init --arch mvvm');
     print(
       '  archify custom booking --template path/to/custom_template.yaml --overwrite',
     );

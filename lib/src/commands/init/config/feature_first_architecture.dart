@@ -1,6 +1,10 @@
-/// The default `archify.yaml` content written the first time
-/// `dart run archify init` runs in a project.
-const defaultArchifyConfig = '''
+/// The `archify.yaml` content written by
+/// `dart run archify init --arch feature-first` — a flatter alternative to
+/// the DDD preset: one concrete repository (no interface split), a plain
+/// model, and an `application/` service layer that holds business logic
+/// independent of any single screen — multiple controllers can share one
+/// service, unlike MVVM's view model. No third-party package required.
+const featureFirstArchifyConfig = '''
 # archify.yaml — the project tree Archify scaffolds. It's just folders and
 # files; rewrite it into any architecture you want (DDD, MVVM, whatever) —
 # Archify only reads this file, it has no opinions of its own.
@@ -22,10 +26,15 @@ version: 1 # archify.yaml schema version — no need to touch this
 # Base project structure — scaffolded by `dart run archify configure`
 structure:
   lib:
-    core: # app-wide config, api client, shared models
+    core: # app-wide config, api client, error handling, shared models
       api:
       config:
-      model:
+      error:
+        failures.dart: core_failures
+        exceptions.dart: core_exceptions
+      network:
+        network_info.dart: core_network_info
+      models:
     feature: # generated features live here
     shared: # reusable theme, widgets, constants, utils
       constant:
@@ -52,19 +61,16 @@ feature_root: lib/feature
 
 feature_template:
   "{feature_name}":
-    data: # repo/data-source implementations
-      data_source_impl:
-        "{feature_name}_data_source_impl.dart": data_source_impl
-      repo_impl:
-        "{feature_name}_repo_impl.dart": repo_impl
-    domain: # repo/data-source interfaces
-      data_source:
-        "{feature_name}_data_source.dart": data_source
-      repo:
-        "{feature_name}_repo.dart": repo
-    presentation: # screens, widgets, state
-      cubit:
-      page:
-        "{feature_name}_page.dart": page
-      widget:
+    data: # one concrete repository — no interface/impl split
+      "{feature_name}_repository.dart": repository
+    domain: # the plain, framework-free shape of this feature's data
+      "{feature_name}_model.dart": model
+    application: # business logic, reusable across more than one screen
+      "{feature_name}_service.dart": service
+    presentation:
+      controllers:
+        "{feature_name}_controller.dart": controller
+      views:
+        "{feature_name}_screen.dart": screen
+      widgets:
 ''';

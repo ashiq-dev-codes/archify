@@ -33,7 +33,7 @@ class ConfigureCommand {
         return;
       }
 
-      InitCommand().run();
+      InitCommand().run(const []);
 
       if (!configFile.existsSync()) {
         print('❌ archify.yaml still not found after running init.');
@@ -125,8 +125,9 @@ class ConfigureCommand {
       '📦 Archify never edits pubspec.yaml. The default templates need nothing beyond the Flutter SDK.',
     );
     print(
-      '   Opting into the Cubit/Bloc templates (cubit, cubit_state, feature_injection)? Run:',
+      '   Opting into the Cubit/Bloc templates (cubit, cubit_state, feature_injection,',
     );
+    print('   vgv_bloc, vgv_event, vgv_state, vgv_page, vgv_view)? Run:');
     print('   flutter pub add ${recommendedPackages.join(' ')}');
   }
 }

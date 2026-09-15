@@ -53,6 +53,194 @@ void main() {
       expect(Directory('${tempDir.path}/lib').existsSync(), isFalse);
     });
 
+    test('Init --arch mvvm writes the MVVM feature_template', () {
+      final tempDir = Directory.systemTemp.createTempSync('archify_test_');
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+
+      final result = Process.runSync('dart', [
+        binPath,
+        'init',
+        '--arch',
+        'mvvm',
+      ], workingDirectory: tempDir.path);
+
+      expect(result.stdout.toString(), contains('Created archify.yaml (MVVM)'));
+      final yaml = File('${tempDir.path}/archify.yaml').readAsStringSync();
+      expect(yaml, contains('viewmodel'));
+      expect(yaml, isNot(contains('data_source_impl')));
+    });
+
+    test('Init --arch with an unknown value fails without writing a file', () {
+      final tempDir = Directory.systemTemp.createTempSync('archify_test_');
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+
+      final result = Process.runSync('dart', [
+        binPath,
+        'init',
+        '--arch',
+        'bogus',
+      ], workingDirectory: tempDir.path);
+
+      expect(result.stdout.toString(), contains('Unknown architecture'));
+      expect(File('${tempDir.path}/archify.yaml').existsSync(), isFalse);
+    });
+
+    test('Generate produces model/viewmodel/view for an MVVM project', () {
+      final tempDir = Directory.systemTemp.createTempSync('archify_test_');
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+
+      Process.runSync('dart', [
+        binPath,
+        'init',
+        '--arch',
+        'mvvm',
+      ], workingDirectory: tempDir.path);
+      final result = Process.runSync('dart', [
+        binPath,
+        'generate',
+        'auth',
+      ], workingDirectory: tempDir.path);
+
+      expect(result.stdout.toString(), contains('generated successfully'));
+      expect(
+        File(
+          '${tempDir.path}/lib/feature/auth/model/auth_model.dart',
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          '${tempDir.path}/lib/feature/auth/viewmodel/auth_viewmodel.dart',
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          '${tempDir.path}/lib/feature/auth/view/auth_view.dart',
+        ).existsSync(),
+        isTrue,
+      );
+    });
+
+    test(
+      'Generate produces repository/service/controller/screen for a Feature-First project',
+      () {
+        final tempDir = Directory.systemTemp.createTempSync('archify_test_');
+        addTearDown(() => tempDir.deleteSync(recursive: true));
+
+        Process.runSync('dart', [
+          binPath,
+          'init',
+          '--arch',
+          'feature-first',
+        ], workingDirectory: tempDir.path);
+        final result = Process.runSync('dart', [
+          binPath,
+          'generate',
+          'auth',
+        ], workingDirectory: tempDir.path);
+
+        expect(result.stdout.toString(), contains('generated successfully'));
+        expect(
+          File(
+            '${tempDir.path}/lib/feature/auth/data/auth_repository.dart',
+          ).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(
+            '${tempDir.path}/lib/feature/auth/application/auth_service.dart',
+          ).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(
+            '${tempDir.path}/lib/feature/auth/presentation/controllers/auth_controller.dart',
+          ).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(
+            '${tempDir.path}/lib/feature/auth/presentation/views/auth_screen.dart',
+          ).existsSync(),
+          isTrue,
+        );
+      },
+    );
+
+    test('Generate produces controller/view for an MVC project', () {
+      final tempDir = Directory.systemTemp.createTempSync('archify_test_');
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+
+      Process.runSync('dart', [
+        binPath,
+        'init',
+        '--arch',
+        'mvc',
+      ], workingDirectory: tempDir.path);
+      final result = Process.runSync('dart', [
+        binPath,
+        'generate',
+        'auth',
+      ], workingDirectory: tempDir.path);
+
+      expect(result.stdout.toString(), contains('generated successfully'));
+      expect(
+        File(
+          '${tempDir.path}/lib/feature/auth/controllers/auth_controller.dart',
+        ).existsSync(),
+        isTrue,
+      );
+      expect(
+        File(
+          '${tempDir.path}/lib/feature/auth/views/auth_view.dart',
+        ).existsSync(),
+        isTrue,
+      );
+    });
+
+    test(
+      'Init --arch vgv-bloc prints a package note and scaffolds Bloc/Page/View',
+      () {
+        final tempDir = Directory.systemTemp.createTempSync('archify_test_');
+        addTearDown(() => tempDir.deleteSync(recursive: true));
+
+        final initResult = Process.runSync('dart', [
+          binPath,
+          'init',
+          '--arch',
+          'vgv-bloc',
+        ], workingDirectory: tempDir.path);
+        expect(initResult.stdout.toString(), contains('flutter_bloc'));
+
+        final result = Process.runSync('dart', [
+          binPath,
+          'generate',
+          'auth',
+        ], workingDirectory: tempDir.path);
+
+        expect(result.stdout.toString(), contains('generated successfully'));
+        expect(
+          File(
+            '${tempDir.path}/lib/feature/auth/bloc/auth_bloc.dart',
+          ).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(
+            '${tempDir.path}/lib/feature/auth/view/auth_page.dart',
+          ).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(
+            '${tempDir.path}/lib/feature/auth/view/auth_view.dart',
+          ).existsSync(),
+          isTrue,
+        );
+      },
+    );
+
     test('Configure command scaffolds the project', () {
       final tempDir = Directory.systemTemp.createTempSync('archify_test_');
       addTearDown(() => tempDir.deleteSync(recursive: true));
@@ -71,6 +259,97 @@ void main() {
       expect(File('${tempDir.path}/lib/main.dart').existsSync(), isTrue);
       expect(Directory('${tempDir.path}/lib/core').existsSync(), isTrue);
     });
+
+    test('Configure removes paths dropped from structure, with a backup', () {
+      final tempDir = Directory.systemTemp.createTempSync('archify_test_');
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+      final configPath = '${tempDir.path}/archify.yaml';
+      final markerPath = '${tempDir.path}/lib/shared/theme/removal_test.md';
+
+      Process.runSync('dart', [
+        binPath,
+        'init',
+      ], workingDirectory: tempDir.path);
+
+      // Add an extra (unmapped, so it's created empty) file to `structure`
+      // and configure — establishes the manifest baseline that includes it.
+      File(configPath).writeAsStringSync(
+        File(configPath).readAsStringSync().replaceFirst(
+          'app_colors.dart: theme_colors',
+          'app_colors.dart: theme_colors\n        removal_test.md:',
+        ),
+      );
+      Process.runSync('dart', [
+        binPath,
+        'configure',
+      ], workingDirectory: tempDir.path);
+      expect(File(markerPath).existsSync(), isTrue);
+
+      // Remove it again and reconfigure — it should disappear from lib/ but
+      // land in a recoverable backup instead of just vanishing.
+      File(configPath).writeAsStringSync(
+        File(configPath).readAsStringSync().replaceFirst(
+          'app_colors.dart: theme_colors\n        removal_test.md:',
+          'app_colors.dart: theme_colors',
+        ),
+      );
+      final result = Process.runSync('dart', [
+        binPath,
+        'configure',
+      ], workingDirectory: tempDir.path);
+
+      expect(result.stdout.toString(), contains('backed up'));
+      expect(File(markerPath).existsSync(), isFalse);
+
+      final backups = Directory('${tempDir.path}/.archify/removed')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('removal_test.md'));
+      expect(backups, isNotEmpty);
+    });
+
+    test(
+      'Generate removes paths dropped from feature_template, with a backup',
+      () {
+        final tempDir = Directory.systemTemp.createTempSync('archify_test_');
+        addTearDown(() => tempDir.deleteSync(recursive: true));
+        final configPath = '${tempDir.path}/archify.yaml';
+        final widgetDirPath =
+            '${tempDir.path}/lib/feature/auth/presentation/widget';
+
+        Process.runSync('dart', [
+          binPath,
+          'init',
+        ], workingDirectory: tempDir.path);
+        Process.runSync('dart', [
+          binPath,
+          'generate',
+          'auth',
+        ], workingDirectory: tempDir.path);
+        expect(Directory(widgetDirPath).existsSync(), isTrue);
+
+        // Drop the `widget:` folder from feature_template and regenerate —
+        // it should be pulled out of the feature, not left stale.
+        File(configPath).writeAsStringSync(
+          File(configPath).readAsStringSync().replaceFirst(
+            '"{feature_name}_page.dart": page\n      widget:\n',
+            '"{feature_name}_page.dart": page\n',
+          ),
+        );
+        final result = Process.runSync('dart', [
+          binPath,
+          'generate',
+          'auth',
+        ], workingDirectory: tempDir.path);
+
+        expect(result.stdout.toString(), contains('backed up'));
+        expect(Directory(widgetDirPath).existsSync(), isFalse);
+        expect(
+          Directory('${tempDir.path}/.archify/removed').existsSync(),
+          isTrue,
+        );
+      },
+    );
 
     test('Templates command lists built-in template keys', () {
       final result = Process.runSync('dart', [binPath, 'templates']);
