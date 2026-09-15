@@ -1,19 +1,23 @@
 ## 1.1.1
 
-* Added four more architecture presets alongside DDD, each with real, properly-layered starter content — not empty files:
-  * **Feature-First** (`--arch feature-first`): one concrete repository (no interface/impl split), a plain model, and an `application/` service layer holding business logic independent of any single screen — several controllers can share one service, unlike MVVM's view model.
-  * **MVC** (`--arch mvc`): the lightest of the five — flat `models`/`repository`/`controllers`/`views`, and a plain (non-`ChangeNotifier`) Controller — the View's own `State` calls it and manages `setState` itself.
-  * **VGV-Bloc** (`--arch vgv-bloc`): the Very Good Ventures / `flutter_bloc` feature convention — a `Page` providing the `Bloc` + route, a `View` that's pure UI, full `Bloc`/`Event`/`State` (not a `Cubit`). The one preset that genuinely needs a package (`flutter_bloc`/`equatable`) from the first feature generated — `init` now prints an architecture-specific `packageNote` when that's the case. Deliberately skips VGV's flavor/multi-entrypoint convention, which `archify.yaml`'s single-`main.dart` model doesn't support.
-  * DDD, MVVM, Feature-First, and MVC all need nothing beyond the Flutter SDK.
-* The DDD and MVVM presets are now properly layered instead of a beginner-level shortcut:
-  * **DDD**: the data source interface used to live in `domain/`, which isn't correct Clean Architecture — only the repository should cross that boundary. Both the data source interface and its implementation now live together in `data/datasources/`. Added a real `domain/entities` (plain entity) + `data/models` (extends the entity) split, and `domain/usecases` — the Cubit now depends on the use case, not the repository directly.
-  * **MVVM**: the view model now depends on a `repository` instead of owning I/O itself.
-  * DDD, MVVM, Feature-First, and MVC share dependency-free `core/error` (`Failure`/`Result<T>` sealed classes — no `dartz`/`fpdart` needed) and `core/network` (`NetworkInfo` via a plain `dart:io` DNS lookup — no `connectivity_plus` needed) infrastructure. DDD also gets `core/usecase`'s `UseCase<ReturnType, Params>` base contract.
-  * The `feature_injection`/`injection_container` opt-in templates were updated to match DDD's new layering: GetIt wires data source → repository → use case → Cubit, and `injection_container.dart` registers the shared `NetworkInfo` singleton.
-* `init` now scaffolds `archify.yaml` from a chosen architecture preset instead of always writing the DDD default: `dart run archify init --arch mvvm`, or omit `--arch` to be prompted (Enter keeps DDD). More architectures can be added to the `architecturePresets` registry later.
-* `configure` and `generate` now fully reconcile `structure`/`feature_template` against the YAML instead of only ever adding to it: removing a key gets its file/folder pulled out of `lib/` on the next run, not left behind stale. Nothing is deleted outright — a removed path is moved to `.archify/removed/<timestamp>/...`, recoverable rather than destroyed. Reconciliation is tracked via a new `.archify/manifest.json` (commit it alongside `archify.yaml`) recording what the last run created, so anything you added by hand is never touched.
-* Fixed the `app` template hardcoding an import of `shared/theme/main_theme.dart` regardless of whether `structure` still declares it — removing theme-related keys from `structure` no longer breaks `app.dart`'s compile. Theming is now left as a commented-out wiring spot, like the screen/state-management ones already were.
-* Added a full Flutter `example/` app (previously just a `main.dart` API-usage script) with `archify` wired in as a local path dev dependency, so the CLI can be exercised against a real, runnable project.
+**New: pick an architecture**
+
+* `init` now lets you choose an architecture instead of always writing the DDD default — `dart run archify init --arch mvvm`, or leave `--arch` off to be prompted.
+* Two brand-new presets: **Feature-First** (flatter than DDD, with one service shared across a feature) and **MVC** (the simplest option). Both need nothing beyond the Flutter SDK.
+* A third new preset, **VGV-Bloc**, follows the `flutter_bloc` Page/View convention — it's the one preset that needs a package, and `init` reminds you which.
+* DDD and MVVM got a real cleanup too: entities, use cases, and repositories are now in the right layer instead of a flattened shortcut.
+
+**New: `archify.yaml` stays in sync**
+
+* `configure` and `generate` now remove what you remove. Deleting a key from `archify.yaml` deletes the matching file/folder from your project on the next run — nothing is left behind stale, and nothing is ever destroyed outright (removed files are backed up under `.archify/removed/`).
+
+**Fixes**
+
+* `app.dart` no longer references a theme file that might not exist, if you customized `structure`.
+
+**Also**
+
+* Added a full, runnable Flutter `example/` app (previously just a script) so you can try the CLI against a real project.
 
 ## 1.1.0
 
@@ -42,7 +46,7 @@ Archify is now driven entirely by a single `archify.yaml` file you control, inst
   ```
   Any `archify.yaml` written before this version needs converting to this shape — run `dart run archify init` in an empty folder to see the new format.
 * Archify no longer edits `pubspec.yaml`. `configure` prints the exact `flutter pub add ...` command instead, for the packages the optional Cubit/Bloc templates need.
-* The default architecture is leaner: `core/config`, the dio/navigation/route/storage helpers under `shared/utils`, `injection_container.dart`, and a generated feature's Cubit/state files are no longer scaffolded by default. All of them are still available — add the template name back into `archify.yaml` yourself (`dart run archify templates` lists them). `main.dart`, `app.dart`, and `root.dart` no longer import any third-party package; MultiBlocProvider, error logging, local storage, and DevicePreview are left as commented-out examples.
+* The default architecture is leaner: networking, navigation, storage, and DI helpers are no longer scaffolded by default. They're all still available — add the template name back into `archify.yaml` yourself (`dart run archify templates` lists them). `main.dart`, `app.dart`, and `root.dart` no longer import any third-party package.
 
 **Also**
 
