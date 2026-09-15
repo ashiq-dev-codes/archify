@@ -1,4 +1,4 @@
-## Unreleased
+## 1.1.1
 
 * Added four more architecture presets alongside DDD, each with real, properly-layered starter content — not empty files:
   * **Feature-First** (`--arch feature-first`): one concrete repository (no interface/impl split), a plain model, and an `application/` service layer holding business logic independent of any single screen — several controllers can share one service, unlike MVVM's view model.
