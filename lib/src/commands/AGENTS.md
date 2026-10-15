@@ -21,6 +21,11 @@ Everything here lands in users' projects. Changing a preset or template changes 
 - Register structure templates in `structureTemplates` ([templates.dart](configure/config/templates.dart)) and feature templates in `featureTemplates` ([feature_templates.dart](generate/feature_templates.dart)). That's all `archify templates` needs to list them.
 - Templates are Dart `'''` strings with interpolation (`$packageName`, `${featureName.toPascalCase()}`). Write a literal `$` as `\$`.
 - Import paths in a template must match the folder layout of every preset that uses it. Check them against each preset's YAML.
+- Generated screens and widgets must look polished and be easy to use out of the box:
+  - Style them through the generated theme (`app_themes.dart`, `app_colors.dart`) or `Theme.of(context)`, never with inline colors or font sizes.
+  - Layouts must not overflow on small screens or with large system text.
+  - Show loading, empty and error states, never a blank screen.
+  - Build them with Flutter's own widgets, no UI packages.
 - If a template needs a package, add it to `recommendedPackages` ([recommended_packages.dart](configure/config/recommended_packages.dart)) so `configure` prints it in its `flutter pub add` reminder.
 
 ## Editing files that already exist

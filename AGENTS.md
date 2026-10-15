@@ -26,9 +26,11 @@ These two come before everything else. If a task can't be done without breaking 
 
 1. **Never lose a user's code.** See [Writing into a user's project](#writing-into-a-users-project).
 2. **The CLI is public.** Renaming a command or flag, changing an `archify.yaml` key or its meaning, or changing a preset's output is a breaking change. List it under **Breaking changes** in the CHANGELOG.
-3. **Copy the nearest existing example** of a command, preset or template.
-4. **Change only what the task needs.** No drive-by refactors, renames or reformatting.
-5. **Don't guess.** If a requirement or a preset's intended layout is unclear, ask.
+3. **Make it friendly and attractive.** Users judge archify by what they see: its terminal output and the screens it generates. See [Output, prompts and errors](#output-prompts-and-errors) and the template rules in [commands](lib/src/commands/AGENTS.md#templates).
+4. **Never use the `!` null-check operator**, in package code or in generated code. Use `?.` and `??`, or check for null first and then handle it: fall back to a safe default, print an ❌ with what to fix, or throw an `Exception` that says what went wrong.
+5. **Copy the nearest existing example** of a command, preset or template.
+6. **Change only what the task needs.** No drive-by refactors, renames or reformatting.
+7. **Don't guess.** If a requirement or a preset's intended layout is unclear, ask.
 
 ## Where things are
 
@@ -54,6 +56,8 @@ Before working in a folder, read its `AGENTS.md` if it has one. Not every tool l
 ## Output, prompts and errors
 
 - Print with `print` and the existing prefixes: ✅ done, ⚠️ warning, ❌ error. Prompts use `stdout.write`.
+- Keep output short and easy to scan: one line per step, and columns aligned in help text and lists.
+- Every message says what happened. A failure also says how to fix it: the command to run or the file to change.
 - Every prompt has a default, used on empty input or closed stdin. The default must be the answer that keeps the user's code.
 - Throw `Exception('...')` with a message the user can act on. Commands catch it and print it.
 
