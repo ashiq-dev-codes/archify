@@ -1,21 +1,30 @@
-# Command Instructions
+# Commands, Presets and Templates
 
-Rules for `lib/src/commands/`. Package-wide rules are in [../../../AGENTS.md](../../../AGENTS.md).
+Rules for `lib/src/commands/`. Repo-wide rules are in [../../../AGENTS.md](../../../AGENTS.md).
 
-Everything here ends up in users' projects: changing a preset or template changes what every new user gets.
+Everything here lands in users' projects. Changing a preset or template changes what every new user gets.
 
 ## Commands
 
-- Each command has its own folder and is dispatched from the `switch` in [archify_cli.dart](../archify_cli.dart), which also prints the help. A new command or flag needs its case there, its help text, a README entry and a test.
+- Each command lives in its own folder and is dispatched from the `switch` in [archify_cli.dart](../archify_cli.dart).
+- A new command or flag needs its `switch` case, a line in `_printUsage`, a README entry and a test.
 
 ## Presets (`init/config/`)
 
-- A preset is one `<name>_architecture.dart` file holding its `archify.yaml` as a const string, plus an entry in `architecturePresets` in [architectures.dart](init/config/architectures.dart). Set `packageNote` if it needs packages, and add it to the README's Architectures table.
-- The comment block at the top of the YAML is repeated in every preset file. Change it in all of them.
+- A preset is one `<name>_architecture.dart` file holding its `archify.yaml` as a const string, plus an entry in `architecturePresets` in [architectures.dart](init/config/architectures.dart).
+- Set `packageNote` if the preset needs a package, and add the preset to the README's Architectures table.
+- Every preset file repeats the same comment block at the top of its YAML. Change it in all of them.
+- `example/archify.yaml` is a copy of the default preset (`defaultArchitectureKey`). Update it when the default changes.
 
 ## Templates
 
-- Structure templates are registered in `structureTemplates` ([templates.dart](configure/config/templates.dart)), feature templates in `featureTemplates` ([feature_templates.dart](generate/feature_templates.dart)). Registering one there is all `archify templates` needs to list it.
-- Templates are Dart `'''` strings that use interpolation (`$packageName`, `${featureName.toPascalCase()}`). Write a literal `$` as `\$`.
-- Import paths inside a template must match the folder layout of every preset that uses it. Check them against each preset's YAML.
-- A template that needs a package goes in `recommendedPackages` ([recommended_packages.dart](configure/config/recommended_packages.dart)) and must be named in the reminder that `_printPackageReminder` prints in [configure.dart](configure/configure.dart).
+- Register structure templates in `structureTemplates` ([templates.dart](configure/config/templates.dart)) and feature templates in `featureTemplates` ([feature_templates.dart](generate/feature_templates.dart)). That's all `archify templates` needs to list them.
+- Templates are Dart `'''` strings with interpolation (`$packageName`, `${featureName.toPascalCase()}`). Write a literal `$` as `\$`.
+- Import paths in a template must match the folder layout of every preset that uses it. Check them against each preset's YAML.
+- If a template needs a package, add it to `recommendedPackages` ([recommended_packages.dart](configure/config/recommended_packages.dart)) so `configure` prints it in its `flutter pub add` reminder.
+
+## Editing files that already exist
+
+- Some commands patch user files in place, e.g. [injection_wiring.dart](generate/injection_wiring.dart) edits `lib/injection_container.dart` and `lib/app.dart`.
+- Such edits must only insert what's missing, so running the command twice changes nothing.
+- If the file is missing, print an ❌ and skip it. Never create a user file just to patch it.
