@@ -8,14 +8,29 @@ Rules for any coding agent working in this repo. User docs are in [README.md](RE
 
 Its public API is what users type and keep: commands, flags, the `archify.yaml` format, and the files each preset generates. `lib/archify.dart` exports exist only for `bin/` and the tests.
 
+## Super rules
+
+These two come before everything else. If a task can't be done without breaking one, stop and ask.
+
+1. **Work on every platform.**
+   - The CLI runs on every OS developers use: macOS, Windows and Linux. Use only cross-platform `dart:io` APIs; no shell commands, OS checks or hard-coded line endings.
+   - Generated code builds on every platform Flutter supports, web included. Templates must not import `dart:io`, `dart:html` or other platform-only libraries, or suggest packages that skip a platform.
+   - Never remove a platform from `platforms:` in [pubspec.yaml](pubspec.yaml).
+2. **Stay lightweight.** archify installs into users' apps, so everything it adds costs them.
+   - Use the Dart SDK before a package. Ask before adding any `dependencies:` entry; `dev_dependencies` don't reach users.
+   - Keep the published package small: anything users don't need goes in [.pubignore](.pubignore).
+   - Generated code needs only the Flutter SDK. A template that needs a package is opt-in, and the CLI prints the `flutter pub add` command for it.
+   - Keep the CLI fast and offline: no network calls, no spawning other processes.
+
 ## Golden rules
 
 1. **Never lose a user's code.** See [Writing into a user's project](#writing-into-a-users-project).
 2. **The CLI is public.** Renaming a command or flag, changing an `archify.yaml` key or its meaning, or changing a preset's output is a breaking change. List it under **Breaking changes** in the CHANGELOG.
-3. **Ask before adding a dependency.** archify installs into users' apps, where every dependency can clash with theirs.
-4. **Copy the nearest existing example** of a command, preset or template.
-5. **Change only what the task needs.** No drive-by refactors, renames or reformatting.
-6. **Don't guess.** If a requirement or a preset's intended layout is unclear, ask.
+3. **Make it friendly and attractive.** Users judge archify by what they see: its terminal output and the screens it generates. See [Output, prompts and errors](#output-prompts-and-errors) and the template rules in [commands](lib/src/commands/AGENTS.md#templates).
+4. **Never use the `!` null-check operator**, in package code or in generated code. Use `?.` and `??`, or check for null first and then handle it: fall back to a safe default, print an ❌ with what to fix, or throw an `Exception` that says what went wrong.
+5. **Copy the nearest existing example** of a command, preset or template.
+6. **Change only what the task needs.** No drive-by refactors, renames or reformatting.
+7. **Don't guess.** If a requirement or a preset's intended layout is unclear, ask.
 
 ## Where things are
 
@@ -41,6 +56,8 @@ Before working in a folder, read its `AGENTS.md` if it has one. Not every tool l
 ## Output, prompts and errors
 
 - Print with `print` and the existing prefixes: ✅ done, ⚠️ warning, ❌ error. Prompts use `stdout.write`.
+- Keep output short and easy to scan: one line per step, and columns aligned in help text and lists.
+- Every message says what happened. A failure also says how to fix it: the command to run or the file to change.
 - Every prompt has a default, used on empty input or closed stdin. The default must be the answer that keeps the user's code.
 - Throw `Exception('...')` with a message the user can act on. Commands catch it and print it.
 
@@ -56,6 +73,7 @@ dart test
 
 Then check:
 
+- Both [super rules](#super-rules) still hold: nothing platform-only and no new weight.
 - Every new command, flag or preset has a test.
 - The README covers every user-visible change, and the CHANGELOG lists it (breaking changes called out).
 - You followed the `AGENTS.md` of every folder you changed.
